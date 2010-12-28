@@ -1,0 +1,49 @@
+> ### READ DATA
+> dat.raw.eventcounts = read.csv("data/raw/event_counts.txt", header=TRUE, sep="\t", stringsAsFactors=FALSE)
+> 
+> ## Look at it
+> dim(dat.raw.eventcounts)
+[1] 24166    27
+> names(dat.raw.eventcounts)
+ [1] "doi"                       "pubDate"                   "journal"                   "articleType"              
+ [5] "authorsCount"              "f1000Factor"               "backtweetsCount"           "deliciousCount"           
+ [9] "pmid"                      "plosSubjectTags"           "plosSubSubjectTags"        "facebookShareCount"       
+[13] "facebookLikeCount"         "facebookCommentCount"      "facebookClickCount"        "mendeleyReadersCount"     
+[17] "almBlogsCount"             "pdfDownloadsCount"         "xmlDownloadsCount"         "htmlDownloadsCount"       
+[21] "almCiteULikeCount"         "almScopusCount"            "almPubMedCount"            "almCrossRefCount"         
+[25] "plosCommentCount"          "plosCommentResponsesCount" "wikipediaCites"           
+> summary(dat.raw.eventcounts)
+     doi              pubDate            journal          articleType        authorsCount       f1000Factor        backtweetsCount   
+ Length:24166       Length:24166       Length:24166       Length:24166       Length:24166       Length:24166       Min.   :  0.0000  
+ Class :character   Class :character   Class :character   Class :character   Class :character   Class :character   1st Qu.:  0.0000  
+ Mode  :character   Mode  :character   Mode  :character   Mode  :character   Mode  :character   Mode  :character   Median :  0.0000  
+                                                                                                                   Mean   :  0.1908  
+                                                                                                                   3rd Qu.:  0.0000  
+                                                                                                                   Max.   :115.0000  
+                                                                                                                                     
+ deliciousCount         pmid           plosSubjectTags    plosSubSubjectTags facebookShareCount facebookLikeCount   facebookCommentCount
+ Length:24166       Length:24166       Length:24166       Length:24166       Min.   : -1.0000   Min.   :   0.0000   Min.   : -1.0000    
+ Class :character   Class :character   Class :character   Class :character   1st Qu.:  0.0000   1st Qu.:   0.0000   1st Qu.:  0.0000    
+ Mode  :character   Mode  :character   Mode  :character   Mode  :character   Median :  0.0000   Median :   0.0000   Median :  0.0000    
+                                                                             Mean   :  0.4099   Mean   :   0.4832   Mean   :  0.2001    
+                                                                             3rd Qu.:  0.0000   3rd Qu.:   0.0000   3rd Qu.:  0.0000    
+                                                                             Max.   :892.0000   Max.   :3424.0000   Max.   :292.0000    
+                                                                             NA's   :  4.0000   NA's   :   4.0000   NA's   :  4.0000    
+ facebookClickCount mendeleyReadersCount almBlogsCount    pdfDownloadsCount xmlDownloadsCount  htmlDownloadsCount almCiteULikeCount
+ Min.   : 0.000     Min.   :   0.000     Min.   :   0.0   Min.   :    1.0   Min.   :     1.0   Min.   :     0     Min.   :  0.00   
+ 1st Qu.: 0.000     1st Qu.:   0.000     1st Qu.:   0.0   1st Qu.:   10.0   1st Qu.:    23.0   1st Qu.:     0     1st Qu.:  0.00   
+ Median : 0.000     Median :   0.000     Median :  85.0   Median :   65.0   Median :   349.0   Median :     3     Median :  1.00   
+ Mean   : 1.650     Mean   :   2.777     Mean   : 154.2   Mean   :  335.1   Mean   :   786.5   Mean   :  1343     Mean   :  2.92   
+ 3rd Qu.: 2.000     3rd Qu.:   3.000     3rd Qu.: 231.0   3rd Qu.:  405.5   3rd Qu.:   958.0   3rd Qu.:  1597     3rd Qu.:  3.00   
+ Max.   :92.000     Max.   :1067.000     Max.   :7503.0   Max.   :60335.0   Max.   :168103.0   Max.   :243364     Max.   :365.00   
+ NA's   :83.000     NA's   : 832.000     NA's   :   7.0   NA's   :   11.0   NA's   :    11.0   NA's   :    11     NA's   : 11.00   
+ almScopusCount    almPubMedCount    almCrossRefCount  plosCommentCount  plosCommentResponsesCount wikipediaCites     
+ Min.   :  0.000   Min.   :  0.000   Min.   :  0.000   Min.   : 0.0000   Min.   : 0.00000          Min.   :0.000e+00  
+ 1st Qu.:  0.000   1st Qu.:  0.000   1st Qu.:  0.000   1st Qu.: 0.0000   1st Qu.: 0.00000          1st Qu.:0.000e+00  
+ Median :  1.000   Median :  1.000   Median :  0.000   Median : 0.0000   Median : 0.00000          Median :0.000e+00  
+ Mean   :  5.386   Mean   :  3.067   Mean   :  2.474   Mean   : 0.1452   Mean   : 0.05468          Mean   :1.111e-01  
+ 3rd Qu.:  4.000   3rd Qu.:  3.000   3rd Qu.:  2.000   3rd Qu.: 0.0000   3rd Qu.: 0.00000          3rd Qu.:0.000e+00  
+ Max.   :671.000   Max.   :268.000   Max.   :273.000   Max.   :44.0000   Max.   :23.00000          Max.   :1.500e+01  
+ NA's   : 11.000   NA's   : 11.000   NA's   :  9.000   NA's   : 8.0000   NA's   : 8.00000          NA's   :1.265e+04  
+> 
+>

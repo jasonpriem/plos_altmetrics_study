@@ -1,0 +1,11 @@
+Please note that this is a *very* rough first commit...it works, on my machine, but 
+it is not well-tested. YMMV. Reasonable documentation is still some ways off, I'm afraid.
+
+You'll need to intall CouchDB, a noSQL database; you can also use Cloudant 
+(http://www.cloudant.com), which offers CouchDB as an Amazon-hosted service.
+
+You'll need to replace "<key>" with your consumer API key in  
+Backtweets/TermSearch.php and Mendeley/ArticleStats.php. 
+
+
+
