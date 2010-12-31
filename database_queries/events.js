@@ -1,15 +1,16 @@
+
 function(doc) {
 
  pubEvent = function(eventType, doi, creator, date, value, count){
-	articlePubDateObj = new Date(doc.pubDate.replace(' ', 'T'));
-   eventPubDateObj = new Date(date.replace(' ', 'T'));
+	 articlePubDateObj = new Date(doc.pubDate.replace(' ', 'T'));
+  eventPubDateObj = new Date(date.replace(' ', 'T'));
 	
-  this.eventType = eventType;
-  this.doi       = doi;
-  this.creator   = creator;
-  this.date      = date;
+  this.eventType = (eventType === undefined) ? "NA" : eventType;
+  this.doi       = (doi === undefined) ? "NA" : doi;
+  this.creator   = (creator === undefined) ? "NA" : creator;
+  this.date      = (date === undefined) ? "NA" : date;
   this.latency   = (eventPubDateObj.getTime() - articlePubDateObj.getTime()) / 1000; //in seconds, not milliseconds
-  if (value === null) {
+  if (value === undefined) {
    this.value    = "NA";
   }
   else if (typeof(value) == "string") {
@@ -55,7 +56,7 @@ function(doc) {
      thisYear = yearMonth.slice(0,4);
      thisMonth = yearMonth.slice(5);
      thisMonthTs = new Date(thisYear, thisMonth, 0, 23, 59, 59).toISOString(); // last second in month	 
-	  thisEvent = new pubEvent(viewType + " views", doc._id, "", thisMonthTs, null, doc.plos_alm.current_stats.views[yearMonth][viewType]); 
+	  thisEvent = new pubEvent(viewType + " views", doc._id, undefined, thisMonthTs, undefined, doc.plos_alm.current_stats.views[yearMonth][viewType]); 
      emit(thisEvent.eventType, thisEvent);
 	 }
    }
