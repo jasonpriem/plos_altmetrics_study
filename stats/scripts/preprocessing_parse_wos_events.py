@@ -1,5 +1,6 @@
-import csv
+## Take in the "Cited by" exports from ISI Web of Science and export a file of one-to-one associations between each Cited By and PLoS article
 
+import csv
 
 reader = csv.DictReader(open("../data/raw/all_2008.txt", "r"), delimiter="\t", quoting=csv.QUOTE_NONE)
 writer = open("../data/derived/wos_2008_events_raw.txt", "w")
@@ -14,16 +15,15 @@ while (a):
 		a = reader.next()
 		print i
 		i = i+1
+		# there are duplicate extractions, so be careful not to count things twice
 		if a['TI'] not in titles:
 			titles.append(a['TI'])
-			#print(a['PD'])
-			#print(a['PY'])
-			#print(a['DI'])
-			#print(a['TI'])
-			#print(a['CR'])
+			# get the list of references and split them into a list of individual references
 			refs = a['CR'].split(";")
+			# only keep ones that have PLOS in them
 			plos_refs = [ref for ref in refs if 'PLOS' in ref]
 			for plos_ref in plos_refs:
+				# parse out bits of the reference
 				ref_parts = plos_ref.split(",")
 				#print ref_parts
 				try:
