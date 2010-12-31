@@ -10,9 +10,11 @@ And thereafter run:
 
     dexy -s docs_src
 
-The resulting docs will be in the new cache subdirectory, and images will be in the new artifacts subdirectory.  To see it working, you can check out
+To see it working, you can check out
 
-    tail -f logs/dexy.log
+	tail -f logs/dexy.log
+		
+The resulting docs will be in the new cache subdirectory, and images will be in the new artifacts subdirectory.  The final pages are then added and committed to the [project wiki repository](https://github.com/jasonpriem/plos_altmetrics_study/wiki) and the images are moved to an image server (with the final doc pages image root path modified accordingly).
 
 
 
