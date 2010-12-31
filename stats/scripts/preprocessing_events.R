@@ -6,7 +6,7 @@
 # in some cases, an event contains a count of occurances that day in the "values" column
 
 ## READ DATA
-dat.raw.events = read.csv("data/raw/events.txt", header=TRUE, sep="\t", stringsAsFactors=FALSE)
+dat.raw.events = read.csv("../data/raw/events.txt", header=TRUE, sep="\t", stringsAsFactors=FALSE)
 
 ## Look at it
 dim(dat.raw.events)
@@ -28,6 +28,9 @@ events.with.individual.rows = names(number.rows[number.rows < max(number.rows)])
 for (myEventType in events.with.individual.rows) {
 	dat.events$number.events[dat.events$eventType == myEventType] = 1
 }
+
+write.table(dat.events, "../data/derived/dat_events_numevents.txt", row.names=F, sep="\t")
+
 
 ## now consolidate these events into a single table of dois, eventsType, and total count
 dat.events.perDoi = as.data.frame(tapply(dat.events$number.events, list(dat.events$doi, dat.events$eventType), sum))

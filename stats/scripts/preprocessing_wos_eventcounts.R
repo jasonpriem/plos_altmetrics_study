@@ -1,0 +1,33 @@
+#library(Rserve)
+#Rserve(args="--no-save")
+
+######## event_counts.txt
+## This data contains into on metrics for which we only have aggregate counts
+
+### READ DATA
+dat.raw.wos = read.csv("data/raw/isi_wos.txt", header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
+
+## Look at it
+dim(dat.raw.wos)
+names(dat.raw.wos)
+summary(dat.raw.wos)
+
+## A bit of data cleaning
+dat.wos = data.frame(doi=dat.raw.wos$DI, wosCount=as.numeric(dat.raw.wos$TC), 
+			journal=dat.raw.wos$SO, articleNumber=dat.raw.wos$AR, year=dat.raw.wos$PY, stringsAsFactors=F) 
+summary(dat.wos)
+
+write.table(dat.wos, "../data/raw/isi_wos_counts.txt", sep="\t", row.names=F, col.names=names(dat.wos))
+
+# start with the data in the repository
+dat.wos = read.csv("../data/raw/isi_wos_counts.txt", header=TRUE, sep="\t", quote="")
+colnames(dat.wos) = c("doi","wosCount","journal","articleNumber","year")
+summary(dat.wos)
+
+# Merge with eventcounts
+dat.eventcounts = merge(dat.eventcounts, dat.wos, by.x="doi", by.y="doi")
+
+## Look again
+summary(dat.eventcounts)
+
+
