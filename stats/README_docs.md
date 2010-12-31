@@ -10,7 +10,11 @@ And thereafter run:
 
     dexy -s docs_src
 
-To see it working, you can check out
+To purge existing artifacts and start fresh, run:
+
+	dexy -ps docs_src
+
+To see what dexy is doing, you can check out
 
 	tail -f logs/dexy.log
 		

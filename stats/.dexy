@@ -1,5 +1,4 @@
 {
-  ".dexy|dexy" : {},
   "../scripts/preprocessing.R|jinja|r|pyg" : {  },
   "../scripts/preprocessing.R|pyg" : {  },
   "../scripts/preprocessing.R|rart" : {  },
@@ -23,5 +22,8 @@
   "../docs_src/results_correlations.md|jinja" : { "scripts/correlations.R|jinja|rart": true},
   "../docs_src/results_factor_analysis.md|jinja" : { "scripts/factor_analysis.R|jinja|rart": true, 
 	"scripts/factor_analysis_embed.R|idio|rint|pyg": true, "scripts/factor_analysis_embed.R|rart": true, 
-	"scripts/factor_scores.R|rart": true}
+	"scripts/factor_scores.R|rart": true},
+  "../docs_src/results_preprocessing.md|jinja" : { "scripts/preprocessing.R|jinja|rart": true},
+  "../docs_src/results_predictions.md|jinja" : { "scripts/prediction.R|jinja|rart": true},
+  ".dexy|dexy" : {}
 }
