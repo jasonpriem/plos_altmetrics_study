@@ -5,6 +5,28 @@
 
 #What data do we have?
 
+{
+  ".dexy|dexy" : {},
+  "../scripts/preprocessing_wos_eventcounts.R|pyg" : {},
+  "../scripts/preprocessing_wos_eventcounts.R|idio" : {},
+  "../scripts/preprocessing_wos_eventcounts.R|idio|rint" : {},
+  "../scripts/preprocessing_wos_eventcounts.R|rart|pyg" : {},
+  "../docs_src/data_collection.md|jinja" : { "allinputs": true }
+}
+
+{{ d['scripts/preprocessing_wos_eventcounts.R|pyg'] }}
+
+{{ d['scripts/preprocessing_wos_eventcounts.R|idio'] }}
+
+{{ d['sections']['scripts/preprocessing_wos_eventcounts.R|idio']['ISI WoS raw export'] }}
+
+{{ d['scripts/preprocessing_wos_eventcounts.R|rart|pyg'] }}
+
+{{ d['sections']['scripts/preprocessing_wos_eventcounts.R|idio|rint']['ISI WoS raw export'] }}
+
+{{ d['sections']['scripts/preprocessing_wos_eventcounts.R|idio|rint']['ISI WoS extracted event counts'] }}
+
+
 ##What alt-metrics data do we have?
 
 We have two types of data:
