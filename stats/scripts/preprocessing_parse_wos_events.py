@@ -2,8 +2,8 @@
 
 import csv
 
-reader = csv.DictReader(open("../data/raw/all_2008.txt", "r"), delimiter="\t", quoting=csv.QUOTE_NONE)
-writer = open("../data/derived/wos_2008_events_raw.txt", "w")
+reader = csv.DictReader(open("../data/raw/wos_plos_2008_citedby.txt", "r"), delimiter="\t", quoting=csv.QUOTE_NONE)
+writer = open("../data/derived/wos_plos_2008_events_raw.txt", "w")
 writer.write("journalRaw\tid\tyearOfCitation\tyearOfCiter\tmonthOfCiter\tdateOfCiter\ttitleOfCiter\n")
 
 titles = []
