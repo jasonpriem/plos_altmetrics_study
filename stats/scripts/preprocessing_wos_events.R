@@ -79,7 +79,7 @@ write.table(dat.wosevents.2008, "../data/derived/wos_plos_2008_events_raw_doi.tx
 
 # Now look up the dates of all the PLoS articles to estimate legacy
 dat.wosevents.2008 = read.csv("../data/derived/wos_plos_2008_events_raw_doi.txt", header=T, sep="\t", stringsAsFactors=F)
-dat.eventcounts = read.csv("../data/raw/event_counts.txt.gz", header=T, sep="\t", stringsAsFactors=F)
+dat.eventcounts = load("../data/derived/eventcounts_preprocessed.RData")
 
 dateLookup = data.frame(doi=dat.eventcounts$doi, pubDate=dat.eventcounts$pubDate)	
 dat.wosevents.merge = merge(dat.wosevents.2008, dateLookup, by="doi")
@@ -119,10 +119,14 @@ yearLookup = data.frame(doi=dat.eventcounts$doi, pubDate=dat.eventcounts$pubDate
 dat.events.with.date = merge(dat.events.all, yearLookup, by="doi")
 dat.events.from.pubs.in.2008 = dat.events.with.date[which(substr(dat.events.with.date$pubDate, 1, 4) == "2008"),]
 
-write.table(dat.events.from.pubs.in.2008, "../data/derived/all_plos_2008_events.txt", sep="\t", row.names=F)
+write.csv(dat.events.from.pubs.in.2008, "../data/derived/plos_2008_events_with_wos.txt", row.names=F)
+system("gzip -f ../data/derived/plos_2008_events_with_wos.txt")
 
+# how many dois have events
 dim(table(as.character(dat.events.from.pubs.in.2008$doi)))
 
+# what is the breakdown of events
+table(dat.events.from.pubs.in.2008$eventType)
 
 
 
