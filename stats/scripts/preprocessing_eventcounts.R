@@ -70,4 +70,5 @@ dat.eventcounts$authorsCount = as.numeric(dat.raw.eventcounts$authorsCount)
 ## Look again
 summary(dat.eventcounts)
 
+save(dat.eventcounts, file="../data/derived/eventcounts_preprocessed.RData")
 
