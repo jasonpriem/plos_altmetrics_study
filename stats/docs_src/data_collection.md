@@ -59,8 +59,18 @@ Extracting Individual citation instances for PLoS articles published in 2008 was
 2.  Extract all of the PLoS references out of the references fields.  Done in Python in [[preprocessing_parse_wos_events.py|https://github.com/jasonpriem/plos_altmetrics_study/blob/master/stats/scripts/preprocessing_parse_wos_events.py]]
 3.  Preprocess these events into the same format as the rest of the alt-metrics.  Done in R in [[preprocessing_wos_events.R|https://github.com/jasonpriem/plos_altmetrics_study/blob/master/stats/scripts/preprocessing_wos_events.R]].  
 
-**notes**
-Because references are so heterogeneous, this information is quite dirty.
+The preprocessing includes several steps:
+* mapping the citations to PLoS 2008 DOIs, using journal name, article number, and year
+* using the "published" dates for the PLoS 2008 articles and the citation dates to compute latency
+* mapping journal names to same journal nicknames used in the rest of the code
 
-{{ d['sections']['scripts/preprocessing_wos_events.R|idio|rint|pyg']['ISI WoS preprocessing'] }}
+Since citations are often incomplete, erronious, and messy, this is an error-prone process.  After step 2 above, we had xxx potential events to xxx 2008 PLoS articles.  After doing the lookups, we were left with
+
+We assume and hope that these are missing randomly!  If so, any patterns we do with citations should still hold true, though the actual citation numbers will be slightly lower than they would be with very clean data. 
+
+
+42055 events
+
+{{ d['sections']['scripts/preprocessing_wos_events.R|idio|rint|pyg']['before stats'] }}
+{{ d['sections']['scripts/preprocessing_wos_events.R|idio|rint|pyg']['after stats'] }}
 
