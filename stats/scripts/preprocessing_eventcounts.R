@@ -5,7 +5,7 @@
 ## This data contains into on metrics for which we only have aggregate counts
 
 ### READ DATA
-dat.raw.eventcounts = read.csv("data/raw/event_counts.txt", header=TRUE, sep="\t", stringsAsFactors=FALSE)
+dat.raw.eventcounts = read.csv("../data/raw/raw_event_counts.txt.gz", header=TRUE, sep="\t", stringsAsFactors=FALSE)
 
 ## Look at it
 dim(dat.raw.eventcounts)
@@ -51,10 +51,6 @@ dat.eventcounts$deliciousCount = as.integer(dat.raw.eventcounts$deliciousCount)
 dat.eventcounts$deliciousCount[is.na(dat.eventcounts$deliciousCount)] = 0
 dat.eventcounts$deliciousCount[dat.eventcounts$deliciousCount > 1000000] = 1
 
-# rename PMC column
-dat.eventcounts$almPubMedCentralCount = dat.eventcounts$almPubMedCount
-dat.eventcounts$almPubMedCount = NULL
-
 # There are a few Facebook results from Facebook API with negative numbers
 # Not clear what this means (not in Facebook API docs), so setting to NA
 facebookColumns = c("facebookShareCount", "facebookLikeCount", "facebookCommentCount", "facebookClickCount")
@@ -70,12 +66,6 @@ summary(dat.eventcounts$articleType)
 
 ## authorsCount
 dat.eventcounts$authorsCount = as.numeric(dat.raw.eventcounts$authorsCount)
-
-## eliminate columns not in use right now
-dat.eventcounts$pmid = NULL
-dat.eventcounts$plosSubjectTags = NULL
-dat.eventcounts$plosSubSubjectTags = NULL
-
 
 ## Look again
 summary(dat.eventcounts)
