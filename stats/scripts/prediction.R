@@ -145,23 +145,32 @@ get.dat.events.merge = function() {
 
 prediction.guts = function (dat.events.merge,  dat.eventcounts.2008, month, starting.day, num.days = 365) {
 	events.month.merge = get.events.month.merge(dat.events.merge, dat.eventcounts.2008, month, starting.day, num.days)
-	fit = ols(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished * log(1+`xml views`) + log(1+blogs) + log(1+delicious) +   log(1+`pdf views`) + log(1+`html views`) + log(1+wosShort) +log(1+`xml views`)+ log(1+citeulike) ), 
+	fit = ols(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished * log(1+`xml views`) + log(1+blogs) + log(1+delicious) +   log(1+`pdf views`) + log(1+`html views`) + log(1+wosShort) + log(1+citeulike) ), 
 		data=events.month.merge[,cols])
 	print(fit)
 
-	fit.full = lm(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished * log(1+`xml views`) + log(1+blogs) + log(1+delicious) +   log(1+`pdf views`) + log(1+`html views`) + log(1+wosShort) +log(1+`xml views`)+ log(1+citeulike) ), 
+	fit.full = lm(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished * log(1+`xml views`) + log(1+blogs) + log(1+delicious) +   log(1+`pdf views`) + log(1+`html views`) + log(1+wosShort) + log(1+citeulike) ), 
+		data=events.month.merge[,cols])
+	fit.usage = lm(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished + log(1+`pdf views`) + log(1+`html views`) + log(1+wosShort)  ), 
 		data=events.month.merge[,cols])
 	fit.nowos = lm(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished * log(1+`xml views`) + log(1+blogs) + log(1+delicious) +   log(1+`pdf views`) + log(1+`html views`) +log(1+`xml views`)+ log(1+citeulike) ), 
 		data=events.month.merge[,cols])
-	fit.wosonly = lm(log(1+wos2yr) ~ log(1+authorsCount) +  factor(journal) + log(1+wosShort),
+	fit.wosonly = lm(log(1+wos2yr) ~ log(1+authorsCount) +  factor(journal) * daysSincePublished + log(1+wosShort),
 		data=events.month.merge[,cols])
-	fit.base = lm(log(1+wos2yr) ~ log(1+authorsCount) +  factor(journal),
+	fit.base = lm(log(1+wos2yr) ~ log(1+authorsCount) +  factor(journal) * daysSincePublished,
 		data=events.month.merge[,cols])
-
+	fit.altonly = lm(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished + log(1+blogs) + log(1+delicious) + log(1+citeulike) ), 
+		data=events.month.merge[,cols])
+	fit.alt.and.wos = lm(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished + log(1+blogs) + log(1+delicious) + log(1+citeulike) + log(1+wosShort) ), 
+		data=events.month.merge[,cols])
+		
 	return(data.frame(month=month,
 										full=summary(fit.full)$adj.r.squared, 
+										usage=summary(fit.usage)$adj.r.squared,
 									  	nowos=summary(fit.nowos)$adj.r.squared, 
 										wosonly=summary(fit.wosonly)$adj.r.squared,
+										altonly=summary(fit.altonly)$adj.r.squared,
+										fit.alt.and.wos=summary(fit.alt.and.wos)$adj.r.squared,
 										base=summary(fit.base)$adj.r.squared))
 }
 
@@ -223,19 +232,34 @@ r.squared.result = do.pred.loop()
 # graph the predictions
 quartz()
 png(paste("../artifacts/r_squared_over_time_diff_models.png", sep=""), width=800, height=800)
-matplot(r.squared.result$month, r.squared.result[2:5], pch="x", type="b", main="Adjusted R-squared of predictions for different models")
-legend(1, .8, names(r.squared.result[2:5]), pch="x", col=1:4)
+matplot(r.squared.result$month, r.squared.result[2:length(r.squared.result)], pch="x", type="b", main="Adjusted R-squared of predictions for different models", col=1:length(r.squared.result))
+legend(1, .8, names(r.squared.result[2:length(r.squared.result)]), pch="x", col=1:length(r.squared.result))
 dev.off()
 
 ## verify alt-metrics are an improvement
 events.month.merge.2 = get.events.month.merge(get.dat.events.merge(), get.dat.eventcounts.2008(), month=2, 680, 365)
 
-fit.full = lm(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished * log(1+`xml views`) + log(1+blogs) + log(1+delicious) +   log(1+`pdf views`) + log(1+`html views`) + log(1+wosShort) +log(1+`xml views`)+ log(1+citeulike) ), 
+fit.full = ols(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished * log(1+`xml views`) + log(1+blogs) + log(1+delicious) +   log(1+`pdf views`) + log(1+`html views`) + log(1+wosShort) + log(1+citeulike) ), 
 	data=events.month.merge.2)
+
+fit.full = lm(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished * log(1+`xml views`) + log(1+blogs) + log(1+delicious) +   log(1+`pdf views`) + log(1+`html views`) + log(1+wosShort) + log(1+citeulike) ), 
+	data=events.month.merge.2)
+fit.full.no.xml = lm(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished + log(1+blogs) + log(1+delicious) +   log(1+`pdf views`) + log(1+`html views`) + log(1+wosShort) + log(1+citeulike) ), 
+	data=events.month.merge.2)	
 fit.wosonly = lm(log(1+wos2yr) ~ log(1+authorsCount) +  factor(journal) + log(1+wosShort),
-	data=events.month.merge)
+	data=events.month.merge.2)
+fit.usage = lm(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished + log(1+`pdf views`) + log(1+`html views`) + log(1+wosShort)  ), 
+	data=events.month.merge.2)
+fit.altonly = lm(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished + log(1+blogs) + log(1+delicious) + log(1+citeulike) ), 
+	data=events.month.merge.2)
+	
 	
 anova(fit.full, fit.wosonly)
+
+
+anova(fit.full, fit.usage)
+anova(fit.full.no.xml, fit.usage)
+
 library(lmtest)
 waldtest(fit.full, fit.wosonly, test="Chisq")
 
@@ -259,6 +283,7 @@ dat.events.merge = get.dat.events.merge()
 dat.eventcounts.2008 = get.dat.eventcounts.2008()
 events.month.merge.firsthalf = get.events.month.merge(dat.events.merge, dat.eventcounts.2008, month, starting.day, 180)
 events.month.merge.secondhalf = get.events.month.merge(dat.events.merge, dat.eventcounts.2008, month, starting.day+180, 180)
+
 fit.full.firsthalf = lm(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished * log(1+`xml views`) + log(1+blogs) + log(1+delicious) +   log(1+`pdf views`) + log(1+`html views`) + log(1+wosShort) +log(1+`xml views`)+ log(1+citeulike) ), 
 	data=events.month.merge.firsthalf)
 
@@ -267,7 +292,11 @@ predicted = exp(prediction.secondhalf[,"fit"])-1
 actual = events.month.merge.secondhalf$wos2yr
 
 predicted.thresh = quantile(predicted, .95, na.rm=T)
+predicted.thresh
+
 actual.thresh = quantile(actual, .50, na.rm=T)
+actual.thresh 
+
 table(predicted>predicted.thresh, actual>actual.thresh)
 chisq.test(table(predicted>predicted.thresh , actual>actual.thresh))
 
