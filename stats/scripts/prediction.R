@@ -231,9 +231,9 @@ dev.off()
 events.month.merge.2 = get.events.month.merge(get.dat.events.merge(), get.dat.eventcounts.2008(), month=2, 680, 365)
 
 fit.full = lm(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) * daysSincePublished * log(1+`xml views`) + log(1+blogs) + log(1+delicious) +   log(1+`pdf views`) + log(1+`html views`) + log(1+wosShort) +log(1+`xml views`)+ log(1+citeulike) ), 
-	data=events.month.merge.2[,cols])
+	data=events.month.merge.2)
 fit.wosonly = lm(log(1+wos2yr) ~ log(1+authorsCount) +  factor(journal) + log(1+wosShort),
-	data=events.month.merge[,cols])
+	data=events.month.merge)
 	
 anova(fit.full, fit.wosonly)
 library(lmtest)
@@ -265,6 +265,12 @@ fit.full.firsthalf = lm(log(1+wos2yr) ~ log(1+authorsCount) +  (factor(journal) 
 prediction.secondhalf = predict(fit.full.firsthalf, events.month.merge.secondhalf, interval="prediction")
 predicted = exp(prediction.secondhalf[,"fit"])-1
 actual = events.month.merge.secondhalf$wos2yr
+
+predicted.thresh = quantile(predicted, .95, na.rm=T)
+actual.thresh = quantile(actual, .50, na.rm=T)
+table(predicted>predicted.thresh, actual>actual.thresh)
+chisq.test(table(predicted>predicted.thresh , actual>actual.thresh))
+
 quartz()
 png(paste("../artifacts/actual_vs_predicted_2months.png", sep=""), width=800, height=800)
 plot(predicted, actual, xlim=c(0,400), ylim=c(0,400), main="actual vs predicted")
@@ -275,9 +281,4 @@ png(paste("../artifacts/actual_vs_predicted_log_2months.png", sep=""), width=800
 plot(log(1+predicted), log(1+actual), xlim=c(-6, 6), ylim=c(-6, 6), main="actual vs predicted, log scale")
 dev.off()
 
-quantile(actual, .50, na.rm=T)
-quantile(predicted, .95, na.rm=T)
-
-table(predicted>2.55, actual>0)
-chisq.test(table(predicted>2, actual>0))
 
