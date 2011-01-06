@@ -1,3 +1,14 @@
+# Makes a new event_trends.txt dataset.
+# event_trends.txt shows counts of those events that have <90 days latency.
+# Latency is defined as the time between an event and the publication
+# of the article it points at.
+# Event counts are given by event type, journal, and year/quarter.
+#
+# Requires: 
+#  raw_events.txt
+#  raw_event_counts.txt
+
+# housekeeping
 options(width=250)
 setwd("/home/jason/projects/Plos altmetrics study")
 library(zoo)
@@ -11,10 +22,10 @@ art <- art[order(art$doi),] #sort by doi
 eve$latency[eve$latency < 0] <- 0
 
 # add all DOIs as levels of events$doi factor
-#eve$doi<-factor(events$doi, levels=levels(articles$doi))
+eve$doi<-factor(eve$doi, levels=levels(art$doi))
 
 # create a table of number of articles with events of a given type and under a given latency
-#  This is sorted by both journal and quarter of article's publication
+# This is sorted by both journal and quarter of article's publication
 #
 # @param events dataframe of all events
 # @param articles  dataframe of all articles
@@ -32,8 +43,11 @@ get.quarterly.counts.restricted.by.latency <- function(events, articles, eventTy
    # make frame with only relevent eventType (saves resources)
    events.myType <- events[events$eventType == eventType,]
 
-   # number of in-window events for each article
-   events.myType.tab <- data.frame(table(events.myType$doi[events.myType$latency < maxLatency]))
+   # count of in-window events for each article
+   events.myType.inWindow <- events.myType[events.myType$latency < maxLatency,]
+   events.myType.tab <- data.frame(as.table(tapply(events.myType.inWindow$count, events.myType.inWindow$doi, sum)))
+   events.myType.tab[is.na(events.myType.tab)] <- 0
+   
    names(events.myType.tab) <- c("doi","eventsInWindow")
    articles <- (merge(articles, events.myType.tab, all.x=TRUE))
    articles$eventsInWindow[is.na(articles$eventsInWindow)] <- 0 # there are a few missing DOIs in the events that get coerced to NA
@@ -48,8 +62,8 @@ get.quarterly.counts.restricted.by.latency <- function(events, articles, eventTy
    articles.byqtr.event.counts[is.na(articles.byqtr.event.counts)] <- 0
 
    names(articles.byqtr.totals) <- c("qtr", "journal", "articles.published")
-   names(articles.byqtr.has.event) <- c("qtr", "journal", "articles.with.events")
-   names(articles.byqtr.event.counts) <- c("qtr", "journal", "total.events")
+   names(articles.byqtr.has.event) <- c("qtr", "journal", paste("articles.with.", eventType, sep=""))
+   names(articles.byqtr.event.counts) <- c("qtr", "journal", paste("total.", eventType, sep=""))
    
    articles.byqtr <- merge(merge(articles.byqtr.totals, articles.byqtr.has.event), articles.byqtr.event.counts)
 
@@ -69,83 +83,24 @@ get.quarterly.counts.restricted.by.latency <- function(events, articles, eventTy
 
 }
 
+# set params
 window.latency = 7776000 # 90 days
-articles.byqtr<-get.quarterly.counts.restricted.by.latency(eve, art, "Nature via Plos", window.latency)
-levels(eve$eventType)
+events.byqtr<-NULL # for use in testing
 
-plot(as.numeric(articles.byqtr[articles.byqtr$journal=="pone","qtr"]), articles.byqtr[articles.byqtr$journal=="pone","articles.with.events"], type="o")
+# Add each event type to the big return table
+eventTypes <- levels(eve$eventType)
+events.byqtr<-get.quarterly.counts.restricted.by.latency(eve, art, eventTypes[1], window.latency)
 
-for (qtr in levels(articles.byqtr$qtr)) {
-
+for (eventType in eventTypes[2:length(eventTypes)]) {
+   events.byqtr.new <- get.quarterly.counts.restricted.by.latency(eve, art, eventType, window.latency)
+   events.byqtr <- merge(events.byqtr, events.byqtr.new)
 }
 
+# express quarters as decimals
+events.byqtr$qtr<-as.numeric(as.yearqtr(events.byqtr$qtr))
 
-
-
-
-
-
-
-names(eve)
-head((sort(eve$date[eve$eventType=="delicious"])))
-
-
-
-#just comments
-com <- d[d$eventType=="native comments",]
-
-# column for which journal
-com$journal <- substr(com$doi, 17, 20)
-
-
-# get rid of comments published before their articles
-com$latency.days <- com$latency / 86400
-hist(com$latency.days)
-nrow(com[com$latency <= 0,])
-nrow(com[com$latency <= 0,]) / nrow(com) # 0.3% isn't much; might as well dump these.
-com <- com[com$latency > 0,]
-
-# explore the distribution of comments over time
-hist(com$latency.days, plot=T, breaks=20)
-com.hist <- hist(com$latency.days, plot=F, breaks=seq(0, max(com$latency.days)+120, by=120))
-com.hist
-com.hist$counts[1] / nrow(com) # 71% of comments in first 120 days
-
-# column for quarter in counts frame
-library(zoo)
-eve.c$qtr <- as.yearqtr(as.Date(eve.c$pubDate,"%Y-%m-%d"))
-
-# column for "has comment with latency <= 120 days"
-eve.c$hasRecentCom <- 0
-eve.c$hasRecentCom[eve.c$doi %in% com$doi[com$latency.days <= 120]] <- 1
-barplot(table(eve.c$qtr[eve.c$hasRecentCom==1])) # articles with recent comments per quarter
-barplot(table(eve.c$qtr)) # total articles published per quarter
-
-qtr.coms <- table(eve.c$hasRecentCom, eve.c$qtr)
-qtr.coms[2:1,]
-
-barplot(qtr.coms[2:1,])
-
-
-# create new data frame for percentages of articles with recent comments by quarter
-qtr.tab<-(table(eve.c$qtr, eve.c$journal, eve.c$hasRecentCom))
-qtr.freqs <- qtr.tab[,,"1"] / table(eve.c$qtr, eve.c$journal)
-mask = apply(qtr.freqs, 2, function(x) return(is.nan(x / x)) ) # finds both 0 and NaN 
-qtr.freqs[mask] <- NA
-
-qtr.freqs <- as.data.frame(cbind(qtr.freqs[,colnames(qtr.freqs)], deparse.level=1))
-## remove the last two quarters, which have incomplete data
-qtr.freqs <- qtr.freqs[1:(nrow(qtr.freqs)-2),]
-qtr.freqs
-
-cols = rainbow(7)
-plot( qtr.freqs$pone, type="o", lwd=2, pch=NA, col=cols[1])
-lines(qtr.freqs$pbio, type="o", lwd=2, pch=NA, col=cols[2])
-lines(qtr.freqs$pcbi, type="o", lwd=2, pch=NA, col=cols[3])
-lines(qtr.freqs$pgen, type="o", lwd=2, pch=NA, col=cols[4])
-lines(qtr.freqs$pmed, type="o", lwd=2, pch=NA, col=cols[5])
-lines(qtr.freqs$pntd, type="o", lwd=2, pch=NA, col=cols[6])
-lines(qtr.freqs$ppat, type="o", lwd=2, pch=NA, col=cols[7])
+# save output
+write.table(events.byqtr, "./datasets/event_trends.txt", sep="\t", row.names=FALSE, quote=FALSE)
 
 
 
