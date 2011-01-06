@@ -62,8 +62,9 @@ get.quarterly.counts.restricted.by.latency <- function(events, articles, eventTy
    articles.byqtr.event.counts[is.na(articles.byqtr.event.counts)] <- 0
 
    names(articles.byqtr.totals) <- c("qtr", "journal", "articles.published")
-   names(articles.byqtr.has.event) <- c("qtr", "journal", paste("articles.with.", eventType, sep=""))
-   names(articles.byqtr.event.counts) <- c("qtr", "journal", paste("total.", eventType, sep=""))
+   eventType.nospace<-gsub(" ", ".", eventType)
+   names(articles.byqtr.has.event) <- c("qtr", "journal", paste("articles.with.", eventType.nospace, sep=""))
+   names(articles.byqtr.event.counts) <- c("qtr", "journal", paste("total.", eventType.nospace, sep=""))
    
    articles.byqtr <- merge(merge(articles.byqtr.totals, articles.byqtr.has.event), articles.byqtr.event.counts)
 
