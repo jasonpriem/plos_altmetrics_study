@@ -1,151 +1,47 @@
 options(width=250)
 setwd("/home/jason/projects/Plos altmetrics study")
-library(zoo)
+d<-read.table("./datasets/event_trends.txt", header=T, sep="\t")
 
-# load data
-eve <-read.csv("./datasets/raw_events.txt", sep="\t")
-art <-read.csv("./datasets/raw_event_counts.txt", sep="\t")
-art <- art[order(art$doi),] #sort by doi
+d <- d[,names(d) %in% c("qtr","journal", "articles.published", "articles.with.native.comments", "total.native.comments")]
 
-# replace latencies < 0 with 0
-eve$latency[eve$latency < 0] <- 0
+# remove NAs
+d.hasna <- d
+d[is.na(d)] <- 0
 
-# add all DOIs as levels of events$doi factor
-#eve$doi<-factor(events$doi, levels=levels(articles$doi))
 
-# create a table of number of articles with events of a given type and under a given latency
-#  This is sorted by both journal and quarter of article's publication
-#
-# @param events dataframe of all events
-# @param articles  dataframe of all articles
-# @param eventType   the type of event you want to count; must match one of the levels in eventsFrame$eventType
-# @param maxLatency  only count events that have occured within maxLatency seconds of their target article's pubDate
-# @return   dataframe with columns quarter, journal, count of events, count of articles with >=1 event.
+# plot total articles with and without comments over time
+d.byqtr.pub <- tapply(d$articles.published, d$qtr, sum)
+d.byqtr.with.coms <- tapply(d$articles.with.native.comments, d$qtr, sum)
+d.byqtr.without.coms <- d.byqtr.pub - d.byqtr.with.coms
 
-get.quarterly.counts.restricted.by.latency <- function(events, articles, eventType, maxLatency) {
+barplot(rbind(d.byqtr.with.coms, d.byqtr.without.coms), space=0, border=NA)
 
-   #events<-eve
-   #articles<-art
-   #eventType<-"native comments"
-   #maxLatency<-7776000
 
-   # make frame with only relevent eventType (saves resources)
-   events.myType <- events[events$eventType == eventType,]
+# rows for qtr, cols for journals
+d.byqtr.byjrnl.with.comments<-tapply(d$articles.with.native.comments, list(d$qtr, d$journal), sum)
+d.byqtr.byjrnl.pub<-tapply(d$articles.published, list(d$qtr, d$journal), sum)
+d.byqtr.byjrnl.pub
+d.byqtr.byjrnl.freq <-  as.data.frame(d.byqtr.byjrnl.with.comments / d.byqtr.byjrnl.pub)
+freq <- d.byqtr.byjrnl.freq # for convenience
 
-   # number of in-window events for each article
-   events.myType.tab <- data.frame(table(events.myType$doi[events.myType$latency < maxLatency]))
-   names(events.myType.tab) <- c("doi","eventsInWindow")
-   articles <- (merge(articles, events.myType.tab, all.x=TRUE))
-   articles$eventsInWindow[is.na(articles$eventsInWindow)] <- 0 # there are a few missing DOIs in the events that get coerced to NA
+# plot percentage of articles with comments, by journal
+## get rid of NaN
+nans <- apply(test, 2, is.nan)
+freq[nans] <- NA
+## get rid of rows that have no positive values
+freq <- freq[apply(freq, 1, function(x) any(x[!is.na(x)] > 0) ),]
 
-   # add yr+qtr of publication to each article
-   articles$qtr <- as.yearqtr(as.Date(articles$pubDate,"%Y-%m-%d"))
+## set up the plot params
+max.y <- max(freq[!is.na(freq)])
+cols<-matrix(rainbow(ncol(freq)), nrow=1, dimnames=list(NULL, names(freq)))
 
-   # make a table showing data for articles by journal and by quarter
-   articles.byqtr.totals      <-  as.data.frame(           table(articles$qtr, articles$journal ))
-   articles.byqtr.has.event    <- as.data.frame(           table(factor(articles$qtr)[articles$eventsInWindow > 0], factor(articles$journal)[articles$eventsInWindow > 0]))
-   articles.byqtr.event.counts <- as.data.frame( as.table (tapply(articles$eventsInWindow, list(articles$qtr, articles$journal), sum)))
-   articles.byqtr.event.counts[is.na(articles.byqtr.event.counts)] <- 0
-
-   names(articles.byqtr.totals) <- c("qtr", "journal", "articles.published")
-   names(articles.byqtr.has.event) <- c("qtr", "journal", "articles.with.events")
-   names(articles.byqtr.event.counts) <- c("qtr", "journal", "total.events")
-   
-   articles.byqtr <- merge(merge(articles.byqtr.totals, articles.byqtr.has.event), articles.byqtr.event.counts)
-
-    
-   # quarter/journal cells in which where a journal wasn't being published yet should be NA, not 0
-   articles.byqtr.totals <- articles.byqtr.totals[order(articles.byqtr.totals$qtr),]
-   articles.byqtr <- articles.byqtr[order(articles.byqtr$qtr),]
-   articles.byqtr[articles.byqtr.totals$articles.published==0,3:ncol(articles.byqtr)] <- NA
-
-   # we've got quarters in there for which we can't have data given the window length; get rid of 'em:
-   qtrs.to.remove.num <- floor(maxLatency / (90 * 24 * 3600)) + 1
-   qtrs <- levels(articles.byqtr$qtr)
-   qtrs.to.keep <- qtrs[1:(length(qtrs) - qtrs.to.remove.num)]
-   articles.byqtr <- articles.byqtr[articles.byqtr$qtr %in% qtrs.to.keep,]
-
-   return(articles.byqtr)
-
+## plot
+plot(rownames(freq), c(rep(0, nrow(freq) - 1), max.y * 100), type="n", ylab="% articles with comments", xlab="year and quarter", main="% Articles with comments after 90 days,\nby journal and quarter")
+for (journal in names(freq)) {
+   lines(rownames(freq), freq[,journal] * 100, type="o", lwd=3, pch=NA, col=cols[1,journal])
 }
+legend("topright", names(freq), cex=0.8, col=cols[1,], pch=NA, lty=1, lwd=8, bty="n")
 
-window.latency = 7776000 # 90 days
-articles.byqtr<-get.quarterly.counts.restricted.by.latency(eve, art, "Nature via Plos", window.latency)
-levels(eve$eventType)
-
-plot(as.numeric(articles.byqtr[articles.byqtr$journal=="pone","qtr"]), articles.byqtr[articles.byqtr$journal=="pone","articles.with.events"], type="o")
-
-for (qtr in levels(articles.byqtr$qtr)) {
-
-}
-
-
-
-
-
-
-
-
-names(eve)
-head((sort(eve$date[eve$eventType=="delicious"])))
-
-
-
-#just comments
-com <- d[d$eventType=="native comments",]
-
-# column for which journal
-com$journal <- substr(com$doi, 17, 20)
-
-
-# get rid of comments published before their articles
-com$latency.days <- com$latency / 86400
-hist(com$latency.days)
-nrow(com[com$latency <= 0,])
-nrow(com[com$latency <= 0,]) / nrow(com) # 0.3% isn't much; might as well dump these.
-com <- com[com$latency > 0,]
-
-# explore the distribution of comments over time
-hist(com$latency.days, plot=T, breaks=20)
-com.hist <- hist(com$latency.days, plot=F, breaks=seq(0, max(com$latency.days)+120, by=120))
-com.hist
-com.hist$counts[1] / nrow(com) # 71% of comments in first 120 days
-
-# column for quarter in counts frame
-library(zoo)
-eve.c$qtr <- as.yearqtr(as.Date(eve.c$pubDate,"%Y-%m-%d"))
-
-# column for "has comment with latency <= 120 days"
-eve.c$hasRecentCom <- 0
-eve.c$hasRecentCom[eve.c$doi %in% com$doi[com$latency.days <= 120]] <- 1
-barplot(table(eve.c$qtr[eve.c$hasRecentCom==1])) # articles with recent comments per quarter
-barplot(table(eve.c$qtr)) # total articles published per quarter
-
-qtr.coms <- table(eve.c$hasRecentCom, eve.c$qtr)
-qtr.coms[2:1,]
-
-barplot(qtr.coms[2:1,])
-
-
-# create new data frame for percentages of articles with recent comments by quarter
-qtr.tab<-(table(eve.c$qtr, eve.c$journal, eve.c$hasRecentCom))
-qtr.freqs <- qtr.tab[,,"1"] / table(eve.c$qtr, eve.c$journal)
-mask = apply(qtr.freqs, 2, function(x) return(is.nan(x / x)) ) # finds both 0 and NaN 
-qtr.freqs[mask] <- NA
-
-qtr.freqs <- as.data.frame(cbind(qtr.freqs[,colnames(qtr.freqs)], deparse.level=1))
-## remove the last two quarters, which have incomplete data
-qtr.freqs <- qtr.freqs[1:(nrow(qtr.freqs)-2),]
-qtr.freqs
-
-cols = rainbow(7)
-plot( qtr.freqs$pone, type="o", lwd=2, pch=NA, col=cols[1])
-lines(qtr.freqs$pbio, type="o", lwd=2, pch=NA, col=cols[2])
-lines(qtr.freqs$pcbi, type="o", lwd=2, pch=NA, col=cols[3])
-lines(qtr.freqs$pgen, type="o", lwd=2, pch=NA, col=cols[4])
-lines(qtr.freqs$pmed, type="o", lwd=2, pch=NA, col=cols[5])
-lines(qtr.freqs$pntd, type="o", lwd=2, pch=NA, col=cols[6])
-lines(qtr.freqs$ppat, type="o", lwd=2, pch=NA, col=cols[7])
 
 
 
