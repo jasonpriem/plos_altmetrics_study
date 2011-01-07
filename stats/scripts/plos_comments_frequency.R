@@ -14,7 +14,7 @@ d.byqtr.pub <- tapply(d$articles.published, d$qtr, sum)
 d.byqtr.with.coms <- tapply(d$articles.with.native.comments, d$qtr, sum)
 d.byqtr.without.coms <- d.byqtr.pub - d.byqtr.with.coms
 
-barplot(rbind(d.byqtr.with.coms, d.byqtr.without.coms), space=0, border=NA)
+barplot(rbind(d.byqtr.with.coms, d.byqtr.without.coms), space=0, border="#444444", xlab="year and quarter", ylab="articles published", main="Total articles and articles with comments\nby quarter")
 
 
 # rows for qtr, cols for journals
@@ -26,7 +26,7 @@ freq <- d.byqtr.byjrnl.freq # for convenience
 
 # plot percentage of articles with comments, by journal
 ## get rid of NaN
-nans <- apply(test, 2, is.nan)
+nans <- apply(freq, 2, is.nan)
 freq[nans] <- NA
 ## get rid of rows that have no positive values
 freq <- freq[apply(freq, 1, function(x) any(x[!is.na(x)] > 0) ),]
@@ -36,11 +36,11 @@ max.y <- max(freq[!is.na(freq)])
 cols<-matrix(rainbow(ncol(freq)), nrow=1, dimnames=list(NULL, names(freq)))
 
 ## plot
-plot(rownames(freq), c(rep(0, nrow(freq) - 1), max.y * 100), type="n", ylab="% articles with comments", xlab="year and quarter", main="% Articles with comments after 90 days,\nby journal and quarter")
+plot(rownames(freq), c(rep(0, nrow(freq) - 1), max.y * 100), type="n", ylab="% articles with comments", xlab="year and quarter", main="% Articles with comments after 90 days\nby journal and quarter")
 for (journal in names(freq)) {
    lines(rownames(freq), freq[,journal] * 100, type="o", lwd=3, pch=NA, col=cols[1,journal])
 }
-legend("topright", names(freq), cex=0.8, col=cols[1,], pch=NA, lty=1, lwd=8, bty="n")
+legend("topright", names(freq), cex=0.7, col=cols[1,], pch=NA, lty=1, lwd=8, bty="n")
 
 
 
