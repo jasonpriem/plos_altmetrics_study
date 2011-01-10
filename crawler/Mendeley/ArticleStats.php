@@ -11,7 +11,7 @@ class Mendeley_ArticleStats {
 	 function __construct(UrlGetter $getter, Urls $urls) {
 		 $this->getter = $getter;
 		 $this->urls = $urls;
-		 $this->urlTemplate = 'http://www.mendeley.com/oapi/documents/details/[doi]?type=doi&consumer_key=<key>';
+		 $this->urlTemplate = 'http://www.mendeley.com/oapi/documents/details/[doi]?type=doi&consumer_key=' .MENDELEY_KEY;
 	 }
 	 
 	 

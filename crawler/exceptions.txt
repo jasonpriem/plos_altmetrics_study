@@ -1,0 +1,165 @@
+Fri, 08 Oct 2010 05:53:23 +0000
+exception 'ErrorException' with message 'Non-static method UpdaterFactory::create() should not be called statically' in C:\wamp\www\alm\update.php:7
+Stack trace:
+#0 C:\wamp\www\alm\update.php(7): handleError('articleStatsTyp...')
+#1 C:\wamp\www\alm\update.php(7): UpdaterFactory::create()
+#2 {main}
+
+Fri, 08 Oct 2010 05:56:08 +0000
+exception 'Exception' with message 'unknown type of article stats type given: 'articleStatsType'' in C:\wamp\www\alm\UpdaterFactory.php:56
+Stack trace:
+#0 C:\wamp\www\alm\update.php(9): UpdaterFactory->create('articleStatsTyp...')
+#1 {main}
+
+Fri, 08 Oct 2010 05:56:38 +0000
+exception 'Exception' with message 'unknown type of article stats type given: 'articleStatsType'' in C:\wamp\www\alm\UpdaterFactory.php:56
+Stack trace:
+#0 C:\wamp\www\alm\update.php(9): UpdaterFactory->create('articleStatsTyp...')
+#1 {main}
+
+Fri, 08 Oct 2010 05:56:47 +0000
+exception 'Exception' with message 'unknown type of article stats type given: 'articleStatsType'' in C:\wamp\www\alm\UpdaterFactory.php:56
+Stack trace:
+#0 C:\wamp\www\alm\update.php(9): UpdaterFactory->create('articleStatsTyp...')
+#1 {main}
+
+Fri, 08 Oct 2010 05:57:07 +0000
+exception 'Exception' with message 'unknown type of article stats type given: 'articleStatsType'' in C:\wamp\www\alm\UpdaterFactory.php:56
+Stack trace:
+#0 C:\wamp\www\alm\update.php(9): UpdaterFactory->create('articleStatsTyp...')
+#1 {main}
+
+Fri, 08 Oct 2010 05:57:14 +0000
+exception 'Exception' with message 'unknown type of article stats type given: 'null'' in C:\wamp\www\alm\UpdaterFactory.php:56
+Stack trace:
+#0 C:\wamp\www\alm\update.php(9): UpdaterFactory->create('null')
+#1 {main}
+
+Fri, 08 Oct 2010 05:58:23 +0000
+exception 'ErrorException' with message 'Undefined variable: stats' in C:\wamp\www\alm\Updater.php:31
+Stack trace:
+#0 C:\wamp\www\alm\Updater.php(31): handleError(Object(Mendeley_ArticleStats))
+#1 C:\wamp\www\alm\UpdaterFactory.php(75): Updater->setArticleStats('Mendeley')
+#2 C:\wamp\www\alm\update.php(9): UpdaterFactory->create()
+#3 {main}
+
+Fri, 08 Oct 2010 05:58:45 +0000
+exception 'ErrorException' with message 'Undefined variable: searchResuls' in C:\wamp\www\alm\UpdaterFactory.php:78
+Stack trace:
+#0 C:\wamp\www\alm\UpdaterFactory.php(78): handleError('Mendeley')
+#1 C:\wamp\www\alm\update.php(9): UpdaterFactory->create()
+#2 {main}
+
+Fri, 08 Oct 2010 06:01:54 +0000
+exception 'ErrorException' with message 'Undefined variable: resultsObj' in C:\wamp\www\alm\Updater.php:87
+Stack trace:
+#0 C:\wamp\www\alm\Updater.php(87): handleError()
+#1 C:\wamp\www\alm\update.php(10): Updater->update()
+#2 {main}
+
+Fri, 08 Oct 2010 06:03:01 +0000
+exception 'ErrorException' with message 'Undefined variable: updatedDoc' in C:\wamp\www\alm\Updater.php:87
+Stack trace:
+#0 C:\wamp\www\alm\Updater.php(87): handleError()
+#1 C:\wamp\www\alm\update.php(10): Updater->update()
+#2 {main}
+
+Sat, 09 Oct 2010 04:44:39 +0000
+exception 'ErrorException' with message 'Undefined variable: searchType' in C:\wamp\www\alm\UpdaterFactory.php:86
+Stack trace:
+#0 C:\wamp\www\alm\UpdaterFactory.php(86): handleError('Backtweets')
+#1 C:\wamp\www\alm\UpdaterFactory.php(63): UpdaterFactory->runSearch('Backtweets')
+#2 C:\wamp\www\alm\update.php(9): UpdaterFactory->create()
+#3 {main}
+
+Sat, 09 Oct 2010 04:45:17 +0000
+exception 'ErrorException' with message 'Undefined variable: searcher' in C:\wamp\www\alm\UpdaterFactory.php:88
+Stack trace:
+#0 C:\wamp\www\alm\UpdaterFactory.php(88): handleError('Backtweets')
+#1 C:\wamp\www\alm\UpdaterFactory.php(63): UpdaterFactory->runSearch('Backtweets')
+#2 C:\wamp\www\alm\update.php(9): UpdaterFactory->create()
+#3 {main}
+
+Sat, 09 Oct 2010 04:45:39 +0000
+exception 'ErrorException' with message 'Undefined variable: updatedDoc' in C:\wamp\www\alm\Updater.php:87
+Stack trace:
+#0 C:\wamp\www\alm\Updater.php(87): handleError()
+#1 C:\wamp\www\alm\update.php(10): Updater->update()
+#2 {main}
+
+Sat, 09 Oct 2010 04:48:29 +0000
+exception 'ErrorException' with message 'Undefined variable: updatedDoc' in C:\wamp\www\alm\Updater.php:87
+Stack trace:
+#0 C:\wamp\www\alm\Updater.php(87): handleError()
+#1 C:\wamp\www\alm\update.php(10): Updater->update()
+#2 {main}
+
+Wed, 13 Oct 2010 21:38:37 +0000
+exception 'ErrorException' with message 'Undefined index:  Curator' in C:\wamp\www\alm\UpdaterFactory.php:80
+Stack trace:
+#0 C:\wamp\www\alm\UpdaterFactory.php(80): handleError('Curator')
+#1 C:\wamp\www\alm\update.php(9): UpdaterFactory->create()
+#2 {main}
+
+Thu, 21 Oct 2010 04:01:04 +0000
+exception 'Exception' with message 'unknown type of article stats type given: 'Wikipedia'' in C:\wamp\www\alm\UpdaterFactory.php:73
+Stack trace:
+#0 C:\wamp\www\alm\update.php(9): UpdaterFactory->create('Wikipedia')
+#1 {main}
+
+Wed, 10 Nov 2010 03:05:07 +0000
+exception 'ErrorException' with message 'Use of undefined constant ALM_CRAWLER_USER - assumed 'ALM_CRAWLER_USER'' in C:\wamp\www\alm\UpdaterFactory.php:81
+Stack trace:
+#0 C:\wamp\www\alm\UpdaterFactory.php(81): handleError('Delicious')
+#1 C:\wamp\www\alm\update.php(9): UpdaterFactory->create()
+#2 {main}
+
+Wed, 10 Nov 2010 03:29:56 +0000
+exception 'ErrorException' with message 'Undefined variable: statsType' in C:\wamp\www\alm\ArticlesScraperFactory.php:13
+Stack trace:
+#0 C:\wamp\www\alm\ArticlesScraperFactory.php(13): handleError('Plos')
+#1 C:\wamp\www\alm\update.php(16): ArticlesScraperFactory->create()
+#2 {main}
+
+Wed, 10 Nov 2010 03:35:16 +0000
+exception 'Exception' with message 'Failed to get url: 'file_get_contents(http://alm.plos.org/articles?page=0) [<a href='function.file-get-contents'>function.file-get-contents</a>]: failed to open stream: HTTP request failed! HTTP/1.1 404 Not Found
+'. Giving up.' in C:\wamp\www\alm\UrlGetter.php:53
+Stack trace:
+#0 C:\wamp\www\alm\PlosArticles\ArticlesScraper.php(23): UrlGetter->get()
+#1 C:\wamp\www\alm\update.php(17): PlosArticles_ArticlesScraper->update()
+#2 {main}
+
+Wed, 10 Nov 2010 03:41:18 +0000
+exception 'ErrorException' with message 'Undefined variable: doiStr' in C:\wamp\www\alm\PlosArticles\ArticlesScraper.php:54
+Stack trace:
+#0 C:\wamp\www\alm\PlosArticles\ArticlesScraper.php(54): handleError(Object(SimpleXMLElement))
+#1 C:\wamp\www\alm\PlosArticles\ArticlesScraper.php(24): PlosArticles_ArticlesScraper->saveArticles()
+#2 C:\wamp\www\alm\update.php(17): PlosArticles_ArticlesScraper->update()
+#3 {main}
+
+Wed, 10 Nov 2010 03:43:30 +0000
+exception 'ErrorException' with message 'Undefined offset:  0' in C:\wamp\www\alm\PlosArticles\ArticlesScraper.php:63
+Stack trace:
+#0 C:\wamp\www\alm\PlosArticles\ArticlesScraper.php(63): handleError(Object(SimpleXMLElement))
+#1 C:\wamp\www\alm\PlosArticles\ArticlesScraper.php(25): PlosArticles_ArticlesScraper->checkIfMore()
+#2 C:\wamp\www\alm\update.php(17): PlosArticles_ArticlesScraper->update()
+#3 {main}
+
+Fri, 12 Nov 2010 18:10:14 +0000
+exception 'Exception' with message 'unknown type of article stats type given: 'PlosArticles'' in C:\wamp\www\alm\UpdaterFactory.php:71
+Stack trace:
+#0 C:\wamp\www\alm\update.php(9): UpdaterFactory->create('PlosArticles')
+#1 {main}
+
+Sat, 13 Nov 2010 07:42:42 +0000
+exception 'Exception' with message 'unknown type of article stats type given: 'PlosArticles'' in C:\wamp\www\alm\UpdaterFactory.php:73
+Stack trace:
+#0 C:\wamp\www\alm\update.php(9): UpdaterFactory->create('PlosArticles')
+#1 {main}
+
+Thu, 18 Nov 2010 23:42:38 +0000
+exception 'Exception' with message 'unknown type of article stats type given: 'F1000'' in C:\wamp\www\alm\UpdaterFactory.php:73
+Stack trace:
+#0 C:\wamp\www\alm\update.php(9): UpdaterFactory->create('F1000')
+#1 {main}
+

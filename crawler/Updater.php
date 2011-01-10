@@ -60,7 +60,7 @@ class Updater {
 		fwrite($this->log, "\n\nstarting update at " . date("H:i") . "\n");
 		$fails = 0;
 		while ($fails < $this->numConsecFailsAllowed) {
-			sleep($this->secondsBetweenUpdates);
+			sleep($this->secondsBetweenUpdates * ($fails + 1));
 			
 			// get a document
 			try {
@@ -97,7 +97,8 @@ class Updater {
 					fwrite($this->log,  $res->id . " updated. {$updatedDoc->latest_changes}\n");
 				} catch (Exception $e) {
 					fwrite($this->log,  "storing {$updatedDoc->_id} failed: " .$e->getMessage(). "\n\n");
-					$fails++;
+					sleep(2);
+					// $fails++;
 					continue;
 				}					
 			}

@@ -2,7 +2,9 @@
 <?php
 require_once './init.php';
 date_default_timezone_set("UTC");
+
 set_time_limit(0);
+
 
 if (isset($_GET['articleStatsType'])){
 	$updaterFactory = new UpdaterFactory();

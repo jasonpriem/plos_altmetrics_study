@@ -18,7 +18,7 @@ class Backtweets_TermSearch implements Iterator{
 	 function __construct(UrlGetter $getter) {
 		 $this->getter = $getter;
 		 $itemsPerPage = 100;
-		 $this->searchUrlTemplate = "http://backtweets.com/search.json?q=[searchTerm]&key=<key>&itemsperpage=$itemsPerPage&page=[page]";
+		 $this->searchUrlTemplate = "http://backtweets.com/search.json?q=[searchTerm]&key=" .BACKTWEETS_KEY. "&itemsperpage=$itemsPerPage&page=[page]";
 		 $this->label = "backtweets";
 	 }
 	 public function setSearchUrlTemplate($searchUrlTemplate) {

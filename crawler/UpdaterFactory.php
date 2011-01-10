@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Create an updater for a given type of article stats
  * The runSearch method be part of a searchFactory at some point.
@@ -27,16 +26,16 @@ class UpdaterFactory {
 			"F1000"			=> date('c', time() - 1209600)	// 2 wks
 		);
 		$this->secondsBetweenDocUpdates = array(
-			"Mendeley"		=> 0,
-			"Backtweets"	=> 0,
+			"Mendeley"		=> 1,
+			"Backtweets"	=> 1,
 			"Delicious"		=> 10,
-			"PlosAlm"		=> 0,
-			"PlosComments"	=> 0,
-			"Curator"		=> 0,
+			"PlosAlm"		=> 1,
+			"PlosComments"	=> 1,
+			"Curator"		=> 1,
 			"Facebook"		=> 1,
-			"Wikipedia"		=> 0,
-			"PlosArticles"	=> 0,
-			"F1000"			=> 0
+			"Wikipedia"		=> 1,
+			"PlosArticles"	=> 1,
+			"F1000"			=> 1
 		);
 		$this->searchTerms = array(
 			"Backtweets"	=> array(
@@ -82,7 +81,7 @@ class UpdaterFactory {
 		$searchResults = $this->runSearch($ucStatsType);
 		
 		// setup the objects we need
-		$db = new Db('http://'.AM_CRAWLER_USER.':'.AM_CRAWLER_PW.'@'.AM_CRAWLER_DB_URL, AM_CRAWLER_DB_NAME);
+		$db = new Db('https://'.AM_CRAWLER_USER.':'.AM_CRAWLER_PW.'@'.AM_CRAWLER_DB_URL, AM_CRAWLER_DB_NAME);
 		$urls = new Urls();
 		$getter = new UrlGetter();
 
