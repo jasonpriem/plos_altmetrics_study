@@ -19,18 +19,24 @@ d$html.per.article[d$html.per.article > 3 * mean(d$html.per.article, na.rm=T)] <
 pdf.ratio.max <- max(d$total.pdf.views / d$total.html.views, na.rm=TRUE)
 
 p <- ggplot(d, aes(x=qtr, y=html.per.article, size=total.pdf.views / total.html.views, colour=factor(journal)))
-p + stat_smooth(alpha=.1, na.rm=TRUE) + geom_point(alpha=.7) + scale_area("pdf views / html views", limits=c(.1, pdf.ratio.max))
+p + stat_smooth(alpha=.1, na.rm=TRUE) + geom_point(alpha=.7) + scale_area("pdf views / html views", limits=c(.1, pdf.ratio.max)) + opts(title="HTML views within 90 days")
 
 ## CiteULike
-p <- ggplot(d, aes(x=qtr, y=articles.with.citeulike / total.html.views * 10000, size=total.citeulike / articles.published, colour=factor(journal)))
-p + stat_smooth(alpha=.1, na.rm=TRUE) + geom_point(alpha=.7) + scale_area("events per article\nwith events")
+p <- ggplot(d, aes(x=qtr, y=total.citeulike / total.html.views * 1000, size=total.citeulike / articles.with.citeulike, colour=factor(journal)))
+p + stat_smooth(alpha=.1, na.rm=TRUE) + geom_point(alpha=.7) + scale_area("bookmarks per\nbookmarked article") + opts(title="CiteULike bookmarks within 90 days")
+
+p <- ggplot(d, aes(x=qtr, y=total.citeulike / articles.published, size=total.citeulike / articles.with.citeulike, colour=factor(journal)))
+p + stat_smooth(alpha=.1, na.rm=TRUE) + geom_point(alpha=.7) + scale_area("bookmarks per\nbookmarked article") + opts(title="CiteULike bookmarks within 90 days")
 
 ## comments
-p <- ggplot(d, aes(x=qtr, y=articles.with.native.comments/articles.published, size=total.native.comments / articles.with.native.comments, colour=factor(journal)))
-p + stat_smooth(alpha=.1, na.rm=TRUE) + geom_point(alpha=.7) + scale_area("pdf views / html views")
+## this will have to wait until I can remove comments that are from reviewers. I think I can do that with a simple grep.
+# p <- ggplot(d, aes(x=qtr, y=total.native.comments/total.html.views * 1000, size=total.native.comments / articles.with.native.comments, colour=factor(journal)))
+# p + stat_smooth(alpha=.1, na.rm=TRUE) + geom_point(alpha=.7) + scale_area("comments per\ncommented-upon article")
 
 ## delicious
-p <- ggplot(d, aes(x=qtr, y=total.delicious/total.html.views * 1000, size=total.delicious / articles.published, colour=factor(journal)))
-p + stat_smooth(alpha=.1, na.rm=TRUE) + geom_point(alpha=.7) + scale_area("pdf views / html views")
+p <- ggplot(d, aes(x=qtr, y=total.delicious/total.html.views * 1000, size=total.delicious / articles.with.delicious, colour=factor(journal)))
+p + stat_smooth(alpha=.1, na.rm=TRUE) + geom_point(alpha=.7) + scale_area("bookmarks per\nbookmarked article") + opts(title="Delicious bookmarks within 90 days")
 
+p <- ggplot(d, aes(x=qtr, y=total.delicious/articles.published, size=total.delicious / articles.with.delicious, colour=factor(journal)))
+p + stat_smooth(alpha=.1, na.rm=TRUE) + geom_point(alpha=.7) + scale_area("bookmarks per\nbookmarked article") + opts(title="Delicious bookmarks within 90 days, per article")
 
