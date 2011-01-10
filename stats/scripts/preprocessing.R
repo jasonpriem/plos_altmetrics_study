@@ -1,5 +1,3 @@
-#write.csv(dat.eventcounts, "../data/derived/dat_eventcounts.txt", row.names=F)
-#write.csv(dat.events, "../data/derived/dat_events.txt", row.names=F)
 
 dat.eventcounts = read.csv("../data/derived/dat_eventcounts.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
 dat.events = read.csv("../data/derived/dat_events.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
