@@ -79,7 +79,7 @@ write.table(dat.wosevents.2008, "../data/derived/wos_plos_2008_events_raw_doi.tx
 
 # Now look up the dates of all the PLoS articles to estimate legacy
 dat.wosevents.2008 = read.csv("../data/derived/wos_plos_2008_events_raw_doi.txt", header=T, sep="\t", stringsAsFactors=F)
-dat.eventcounts = load("../data/derived/eventcounts_preprocessed.RData")
+load("../data/derived/eventcounts_preprocessed.RData")
 
 dateLookup = data.frame(doi=dat.eventcounts$doi, pubDate=dat.eventcounts$pubDate)	
 dat.wosevents.merge = merge(dat.wosevents.2008, dateLookup, by="doi")
