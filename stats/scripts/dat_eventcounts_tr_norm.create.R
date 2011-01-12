@@ -2,39 +2,46 @@ library(Hmisc)
 
 ### @export "transformation function"
 
-# using sqrt with minimum value of 1, as per advice at
-# http://www.webcitation.org/query?url=http%3A%2F%2Fpareonline.net%2Fgetvn.asp%3Fv%3D8%26n%3D6&date=2010-02-11
-tr = function(x) return(sqrt(1 + x))
+# log transform
+tr = function(x) return(log(1 + x))
 
 ### @export "read data"
 
-dat.eventcounts = read.csv("../data/derived/dat_eventcounts.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
+dat.eventcounts.nowos = read.csv("../data/derived/dat_eventcounts.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
+#load("../data/derived/eventcounts_preprocessed.RData")
 
 # include ISI WoS data 
-dat.wos = read.csv("../data/raw/isi_wos_counts.txt", header=TRUE, sep="\t", stringsAsFactors=FALSE)
+dat.wos = read.csv("../data/derived/isi_wos_counts.txt", header=TRUE, sep="\t", stringsAsFactors=FALSE)
 colnames(dat.wos) = c("doi","wosCount","journal","articleNumber","year")
 summary(dat.wos)
 
 # Merge with eventcounts
-dat.eventcounts = merge(dat.eventcounts, dat.wos, by.x="doi", by.y="doi")
+dat.eventcounts = merge(dat.eventcounts.nowos, dat.wos, by.x="doi", by.y="doi", all.x=T)
 
 
-# Write out the normalized data
+# Write out the merged data
 write.csv(dat.eventcounts, "../data/derived/dat_eventcounts_withwos.txt", row.names=F)
 
+library(rms)
 
-metadataColumns = c("doi", "pubDate", "daysSincePublished", "journal.x", "articleType", "authorsCount", "journal.y", "articleNumber", "year", "pubDateVal")
+metadataColumns = c("doi", "pubDate", "daysSincePublished", "journal.x", "articleType", "authorsCount", "journal.y", "articleNumber", "year", "pubDateVal", "pmid", "plosSubjectTags", "plosSubSubjectTags")
 altmetricsColumns = names(dat.eventcounts)[names(dat.eventcounts) %nin% metadataColumns]
 dat.eventcounts$pubDateVal = strptime(dat.eventcounts$pubDate, "%Y-%m-%d")
+
+## Do the transformation
 dat.eventcounts.tr = dat.eventcounts
 dat.eventcounts.tr[,altmetricsColumns] = tr(dat.eventcounts.tr[,altmetricsColumns])
-	
+
+# Write out the transformed data
+write.csv(dat.eventcounts.tr, "../data/derived/dat_eventcounts_tr.txt", row.names=F)
+
+# strip to research only 	
 dat = dat.eventcounts.tr
 isResearch = which(as.character(dat$articleType) == "Research Article")
 dat = dat[isResearch,]
 
-# Write out the normalized data
-write.csv(dat, "../data/derived/dat_eventcounts_researchonly.txt", row.names=F)
+# Write out the transformed, research data
+write.csv(dat, "../data/derived/dat_eventcounts_tr_researchonly.txt", row.names=F)
 
 ### @export "normalize functions"
 
@@ -136,4 +143,4 @@ for (col in altmetricsColumns) {
 
 
 # Write out the normalized data
-write.csv(dat.norm, "../data/derived/dat_eventcounts_norm.txt", row.names=F, sep="\t")
+write.csv(dat.norm, "../data/derived/dat_eventcounts_tr_norm.txt", row.names=F)

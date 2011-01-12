@@ -1,31 +1,45 @@
 library(Hmisc)
 
-dat.not.norm = read.csv("../data/derived/dat_eventcounts_withwos.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
-dat.norm = read.csv("../data/derived/dat_eventcounts_norm.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
+dat.not.norm = read.csv("../data/derived/dat_eventcounts_tr_researchonly.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
+dat.norm = read.csv("../data/derived/dat_eventcounts_tr_norm.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
 dats = list()
 dats[["normalized"]] = dat.norm
 dats[["notNormalized"]] = dat.not.norm
 
-altmetricsColumns = c( "pdfDownloadsCount",        
-"htmlDownloadsCount",       
-"xmlDownloadsCount",        
+altmetricsColumns = c( "wosCount",
+"almScopusCount",
+"almPubMedCentralCount",
+"almCrossRefCount",
+"pdfDownloadsCount",        
+"htmlDownloadsCount",    
 "mendeleyReadersCount",     
 "almCiteULikeCount",        
-"wosCount",
-"almScopusCount",           
-"almCrossRefCount",         
-"almPubMedCentralCount",    
 "plosCommentCount",         
 "plosCommentResponsesCount",
-"deliciousCount",           
-"facebookClickCount",       
+"deliciousCount",
 "almBlogsCount",            
-"wikipediaCites",           
+"facebookCommentCount",          
+"facebookLikeCount",          
+"facebookShareCount",          
+"facebookClickCount",          
 "f1000Factor",              
-"facebookCommentCount",     
-"facebookLikeCount",        
-"facebookShareCount",       
+"wikipediaCites",           
 "backtweetsCount")
+
+corrColumns = c( "wosCount",
+"pdfDownloadsCount",        
+"htmlDownloadsCount",    
+"mendeleyReadersCount",     
+"almCiteULikeCount",        
+"deliciousCount",
+"almBlogsCount",   
+"backtweetsCount", 
+"wikipediaCites",        
+"f1000Factor",              
+"plosCommentCount",         
+"plosCommentResponsesCount",
+"facebookCommentCount"                     
+)
 
 
 #########
@@ -74,7 +88,7 @@ function(data, ML=FALSE, std.err=TRUE, use=c("complete.obs", "pairwise.complete.
   diag(N) <- if (use == "complete.obs") nrow(data)
              else sapply(data, function(x) sum(!is.na(x)))
   for (i in 2:p) {
-    print(i)
+    #print(i)
     for (j in 1:(i-1)){
       x <- data[[i]]
       y <- data[[j]]
@@ -171,95 +185,130 @@ get_correlations = function(mydat, type) {
 	#mycor.unadjusted[which(is.na(mycor.unadjusted))] = 1
 
 	# Now fix the correlation matrix if it is not positive-definite
-	mycor.adjusted = adjust.to.positive.definite(mycor.unadjusted)
-	return(mycor.adjusted)
+	#mycor.return = adjust.to.positive.definite(mycor.unadjusted)
+	mycor.return = mycor.unadjusted
+	return(mycor.return)
 }
 
-plot_heatmap = function (mycor, main, dend="none", Colv=F) {
+plot_heatmap = function (mycor, main, dend="none", Colv=F, withlabels=F) {
 	if (dend!="none") Colv=T
-	colorRange = round(range(mycor) * 15) + 16
+	if (withlabels==TRUE) {
+		textsize=1.5
+		marginsize=20
+	} else {
+		textsize=.2
+		marginsize=.5
+	}
+	colorRange = round(range(mycor, na.rm=T) * 15) + 16
 	colorChoices = bluered(32)[colorRange[1]:colorRange[2]]
-	heatmap.2(mycor, col=colorChoices, cexRow=0.9, cexCol = .9, symm = TRUE, 
+	heatmap.2(mycor, col=colorChoices, symm = TRUE, cexRow=textsize, cexCol = textsize, 
 		#dend = "both", Colv=T, 
 		dend = dend, Colv=Colv, Rowv=F,
-		lmat=rbind( c(0, 3), c(2,1), c(0,4) ), lhei=c(1.5, 4, 2 ),
-		trace = "none", margins=c(10,10), key=FALSE, keysize=0.1, main=main)
+		lmat=rbind( c(0, 3), c(2,1), c(0,4) ), lhei=c(0.1, 2, 0.1), 
+		trace = "none", margins=c(marginsize, marginsize), key=FALSE, keysize=0.1, main=main)
 }
+#plot_heatmap(mycor, type, withlabels=T)
+
 
 ### @export "correlations of alt-metrics"
 
-# for different normalizations and correlation types
+# for different normalizations and correlation types, for all altmetrics
 for (norm in names(dats)){
 	dat = dats[[norm]]
 	for (type in c("spearman", "pearson")) {
 		mycor = get_correlations(dat[,altmetricsColumns], type)
-		#quartz()
-		png(paste("../artifacts/heatmap_altmetrics_", type, "_", norm, ".png", sep=""))
-		plot_heatmap(mycor, type)
-		title(norm)
-		dev.off()
 		write.csv(mycor, paste("../data/derived/dat_corr_", type, "_", norm, ".txt", sep=""), row.names=F)
 	}
 }
 
+for (norm in names(dats)){
+	dat = dats[[norm]]
+	for (type in c("spearman", "pearson")) {
+		mycor = get_correlations(dat[,corrColumns], type)
+		#quartz()
+		png(paste("../artifacts/heatmap_altmetrics_", type, "_", norm, ".png", sep=""), height=2000, width=2000)
+		plot_heatmap(mycor, type,withlabels=T)
+		title(norm)
+		dev.off()
+	}
+}
+
 # Now with dendrograms
-type = "spearman"
+type = "pearson"
 norm = "normalized"
 dat = dats[[norm]]
-mycor = get_correlations(dat[,altmetricsColumns], type)
-png(paste("../artifacts/heatmap_altmetrics_dend_", type, "_", norm, ".png", sep=""))
-plot_heatmap(mycor, type, dend="both")
+mycor = get_correlations(dat[,corrColumns], type)
+png(paste("../artifacts/heatmap_altmetrics_dend_", type, "_", norm, ".png", sep=""), height=2000, width=2000)
+plot_heatmap(mycor, type, dend="both",withlabels=T)
 title(norm)
 dev.off()
 
 
-# for different journals
-type = "spearman"
+# for different journals, different years
+type = "pearson"
 norm = "normalized"
-year = 2008
 dat = dats[[norm]]
-for (journal in names(table(dat$journal.x))) {
-	print(journal)
-	if (journal != "pntd") {
+for (year in 2010:2004) {
+	for (journal in names(table(dat$journal.x))) {
+		print(year); print(journal)
 		inYear = which(dat$year == year)
 		inJournal = which(dat$journal.x == journal)
-		mycor = get_correlations(dat[inYear %in% inJournal,altmetricsColumns], type)
-		png(paste("../artifacts/heatmap_altmetrics_", journal, year, ".png", sep=""))
-		plot_heatmap(mycor, type)
-		title(paste("\n", year, journal, norm, type))
-		dev.off()
-		#write.csv(dat.events, paste("../data/derived/dat_corr", type, ".txt", sep=""), row.names=F)
+		dat.subset = dat[intersect(inYear,inJournal),corrColumns]
+		if (nrow(dat.subset) > 50) {
+			print(dim(dat.subset))
+			mycor = get_correlations(dat.subset, type)
+			png(paste("../artifacts/heatmap_altmetrics_", journal, year, ".png", sep=""), height=2000, width=2000)
+			plot_heatmap(mycor, type,withlabels=F)
+			title(paste("\n", year, journal, norm, type, "n=", nrow(dat.subset)))
+			dev.off()
+			#write.csv(dat.events, paste("../data/derived/dat_corr", type, ".txt", sep=""), row.names=F)
+		}
 	}
 }
 
 
 # for different years
-type = "spearman"
+type = "pearson"
 norm = "normalized"
-journal = "pbio"
+journal = "all"
 dat = dats[[norm]]
-for (year in 2003:2010) {
+for (year in 2004:2010) {
 	print(year)
 	inYear = which(dat$year == year)
-	inJournal = which(dat$journal.x == journal)
-	mycor = get_correlations(dat[inYear %in% inJournal, altmetricsColumns], type)
-	png(paste("../artifacts/heatmap_altmetrics_", journal, year, ".png", sep=""))
+	mycor = get_correlations(dat[inYear,corrColumns], type)
+	png(paste("../artifacts/heatmap_altmetrics_", journal, year, ".png", sep=""), width=2000, height=2000)
 	plot_heatmap(mycor, type)
-	title(paste("\n", year, journal, norm, type))
+	#title(paste("\n", year, journal, norm, type))
 	dev.off()
 	#write.csv(dat.events, paste("../data/derived/dat_corr", type, ".txt", sep=""), row.names=F)
 }
 
-## Would be cool to do it for different article types too
+# for different journals
+type = "pearson"
+norm = "normalized"
+dat = dats[[norm]]
+year = "all"
+for (journal in names(table(dat$journal.x))) {
+	print(year); print(journal)
+	inJournal = which(dat$journal.x == journal)
+	dat.subset = dat[inJournal,corrColumns]
+	print(dim(dat.subset))
+	mycor = get_correlations(dat.subset, type)
+	png(paste("../artifacts/heatmap_altmetrics_", journal, year, ".png", sep=""), height=2000, width=2000)
+	plot_heatmap(mycor, type,withlabels=F)
+	title(paste("\n", year, journal, norm, type, "n=", nrow(dat.subset)))
+	dev.off()
+	#write.csv(dat.events, paste("../data/derived/dat_corr", type, ".txt", sep=""), row.names=F)
+}
 
 # Now a heatmap with a subsample of articles and the variables
 set.seed(42)
-type = "spearman"
+type = "pearson"
 norm = "normalized"
 year = 2008
 inYear = which(dat$year == year)
 dat.tosample = dats[[norm]][inYear,]
-dat.subsample = as.matrix(dat.tosample[sample(1:dim(dat.tosample)[1], 1000, TRUE), altmetricsColumns])
+dat.subsample = as.matrix(dat.tosample[sample(1:dim(dat.tosample)[1], 1000, TRUE), corrColumns])
 m=200
 png(paste("../artifacts/heatmap_articles_vs_altmetrics_", year, ".png", sep=""))
 heatmap.2(t(dat.subsample), col=bluered(m*2)[1:(m*2-1)], 

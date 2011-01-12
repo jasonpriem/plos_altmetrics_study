@@ -71,4 +71,4 @@ dat.eventcounts$authorsCount = as.numeric(dat.raw.eventcounts$authorsCount)
 summary(dat.eventcounts)
 
 save(dat.eventcounts, file="../data/derived/eventcounts_preprocessed.RData")
-
+write.csv(dat.eventcounts, "../data/derived/dat_eventcounts.txt", row.names=F)
