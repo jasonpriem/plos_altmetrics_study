@@ -22,7 +22,7 @@ class UpdaterFactory {
 			"Curator"		=> "\u9999",							// anything
 			"Facebook"		=> date('c', time() - 604800),	// 1 wk
 			"Wikipedia"		=> date('c', time() - 1209600),	// 2 wk
-			"PlosArticles"	=> date('c', time() - 43200),		// 12 hrs
+			"PlosArticles"	=> date('c', time() - 604800),	// 1 wk
 			"F1000"			=> date('c', time() - 1209600)	// 2 wks
 		);
 		$this->secondsBetweenDocUpdates = array(
