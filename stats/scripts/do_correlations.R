@@ -26,7 +26,8 @@ altmetricsColumns = c( "wosCount",
 "wikipediaCites",           
 "backtweetsCount")
 
-corrColumns = c( "wosCount",
+corrColumns = c( 
+	"wosCount",
 "pdfDownloadsCount",        
 "htmlDownloadsCount",    
 "mendeleyReadersCount",     
@@ -191,7 +192,8 @@ get_correlations = function(mydat, type) {
 }
 
 plot_heatmap = function (mycor, main, dend="none", Colv=F, withlabels=F) {
-	if (dend!="none") Colv=T
+	Colv = (dend=="both")
+	Rowv = (dend=="both")
 	if (withlabels==TRUE) {
 		textsize=1.5
 		marginsize=20
@@ -203,7 +205,7 @@ plot_heatmap = function (mycor, main, dend="none", Colv=F, withlabels=F) {
 	colorChoices = bluered(32)[colorRange[1]:colorRange[2]]
 	heatmap.2(mycor, col=colorChoices, symm = TRUE, cexRow=textsize, cexCol = textsize, 
 		#dend = "both", Colv=T, 
-		dend = dend, Colv=Colv, Rowv=F,
+		dend = dend, Colv=Colv, Rowv=Rowv,
 		lmat=rbind( c(0, 3), c(2,1), c(0,4) ), lhei=c(0.1, 2, 0.1), 
 		trace = "none", margins=c(marginsize, marginsize), key=FALSE, keysize=0.1, main=main)
 }
@@ -240,6 +242,11 @@ dat = dats[[norm]]
 mycor = get_correlations(dat[,corrColumns], type)
 png(paste("../artifacts/heatmap_altmetrics_dend_", type, "_", norm, ".png", sep=""), height=2000, width=2000)
 plot_heatmap(mycor, type, dend="both",withlabels=T)
+title(norm)
+dev.off()
+
+png(paste("../artifacts/heatmap_altmetrics_allall.png", sep=""), height=2000, width=2000)
+plot_heatmap(mycor, type, dend="none",withlabels=T)
 title(norm)
 dev.off()
 

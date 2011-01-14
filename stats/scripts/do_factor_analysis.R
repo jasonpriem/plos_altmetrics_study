@@ -85,9 +85,9 @@ dev.off()
 # look at residuals
 fit.fa.1st.residuals = results[["fa"]]$residual
 #quartz()
-png(paste("../artifacts/heatmap_factor_residuals.png", sep=""))
-heatmap.2(fit.fa.1st.residuals, col=bluered(16), cexRow=0.5, cexCol = .8, symm = TRUE, dend = "row", trace = "none", 
-	margins=c(15,15), key=FALSE, keysize=0.1)
+png(paste("../artifacts/heatmap_factor_residuals.png", sep=""), width=2000, height=2000)
+heatmap.2(fit.fa.1st.residuals, col=bluered(16), cexRow=0.5, cexCol = .5, symm = TRUE, dend = "row", trace = "none", 
+	margins=c(10,10), key=FALSE, keysize=0.1)
 dev.off()
 
 

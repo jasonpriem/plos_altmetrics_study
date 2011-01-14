@@ -1,28 +1,7 @@
-library(Hmisc)
-
-### @export "transformation function"
-
-# log transform
-tr = function(x) return(log(1 + x))
-
-### @export "read data"
-
-dat.eventcounts.nowos = read.csv("../data/derived/dat_eventcounts.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
-#load("../data/derived/eventcounts_preprocessed.RData")
-
-# include ISI WoS data 
-dat.wos = read.csv("../data/derived/isi_wos_counts.txt", header=TRUE, sep="\t", stringsAsFactors=FALSE)
-colnames(dat.wos) = c("doi","wosCount","journal","articleNumber","year")
-summary(dat.wos)
-
-# Merge with eventcounts
-dat.eventcounts = merge(dat.eventcounts.nowos, dat.wos, by.x="doi", by.y="doi", all.x=T)
-
-
-# Write out the merged data
-write.csv(dat.eventcounts, "../data/derived/dat_eventcounts_withwos.txt", row.names=F)
 
 library(rms)
+
+dat.eventcounts = read.csv("../data/derived/event_counts_merged_cleaned.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
 
 metadataColumns = c("doi", "pubDate", "daysSincePublished", "journal.x", "articleType", "authorsCount", "journal.y", "articleNumber", "year", "pubDateVal", "pmid", "plosSubjectTags", "plosSubSubjectTags")
 altmetricsColumns = names(dat.eventcounts)[names(dat.eventcounts) %nin% metadataColumns]
@@ -143,4 +122,4 @@ for (col in altmetricsColumns) {
 
 
 # Write out the normalized data
-write.csv(dat.norm, "../data/derived/dat_eventcounts_tr_norm.txt", row.names=F)
+write.csv(dat.norm, "../data/derived/event_counts_normalized.txt", row.names=F)

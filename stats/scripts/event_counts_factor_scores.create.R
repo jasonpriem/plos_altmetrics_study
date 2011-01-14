@@ -1,8 +1,8 @@
 
 ## Could impute missing values
 
-mycorr = read.csv("../data/derived/dat_corr_spearman_normalized.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
-dat = read.csv("../data/derived/dat_eventcounts_norm.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
+mycorr = read.csv("../data/derived/event_counts_correlation.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
+dat = read.csv("../data/derived/event_counts_normalized.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
 
 library(psych)
 library(GPArotation)
@@ -57,5 +57,5 @@ scores = as.data.frame(t(scores.1st))
 names(scores) = factor.labels
 
 dat.merge = cbind(dat.for.scores, scores.1st)
-write.csv(dat.merge, "../data/derived/dat_with_factor_scores.txt", row.names=F)
+write.csv(dat.merge, "../data/derived/event_counts_factor_scores.txt", row.names=F)
 
