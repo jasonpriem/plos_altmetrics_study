@@ -5,6 +5,10 @@
 ## This data contains into on metrics for which we only have aggregate counts
 
 ### READ DATA
+
+#workarounds while zipped to get into gz
+system("unzip ../data/derived/event_counts_altmetrics_cleaned.txt.zip")
+system("gzip ../data/derived/event_counts_altmetrics_cleaned.txt")
 dat.raw.eventcounts = read.csv("../data/raw/raw_event_counts.txt.gz", header=TRUE, sep="\t", stringsAsFactors=FALSE)
 
 ## Look at it
@@ -46,11 +50,6 @@ dat.eventcounts$mendeleyReadersCount[is.na(dat.eventcounts$mendeleyReadersCount)
 # Change facebookClickCount NAs to 0s
 dat.eventcounts$facebookClickCount[is.na(dat.eventcounts$facebookClickCount)] = 0
 
-# delicious count looks strange for now
-dat.eventcounts$deliciousCount = as.integer(dat.raw.eventcounts$deliciousCount)
-dat.eventcounts$deliciousCount[is.na(dat.eventcounts$deliciousCount)] = 0
-dat.eventcounts$deliciousCount[dat.eventcounts$deliciousCount > 1000000] = 1
-
 # There are a few Facebook results from Facebook API with negative numbers
 # Not clear what this means (not in Facebook API docs), so setting to NA
 facebookColumns = c("facebookShareCount", "facebookLikeCount", "facebookCommentCount", "facebookClickCount")
@@ -72,3 +71,4 @@ summary(dat.eventcounts)
 
 save(dat.eventcounts, file="../data/derived/eventcounts_preprocessed.RData")
 write.csv(dat.eventcounts, "../data/derived/event_counts_altmetrics_cleaned.txt", row.names=F)
+system("gzip ../data/derived/event_counts_altmetrics_cleaned.txt")
