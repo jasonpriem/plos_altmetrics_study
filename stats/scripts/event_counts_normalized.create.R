@@ -1,26 +1,7 @@
 
 library(rms)
 
-dat.eventcounts = read.csv("../data/derived/event_counts_merged_cleaned.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
 
-metadataColumns = c("doi", "pubDate", "daysSincePublished", "journal.x", "articleType", "authorsCount", "journal.y", "articleNumber", "year", "pubDateVal", "pmid", "plosSubjectTags", "plosSubSubjectTags")
-altmetricsColumns = names(dat.eventcounts)[names(dat.eventcounts) %nin% metadataColumns]
-dat.eventcounts$pubDateVal = strptime(dat.eventcounts$pubDate, "%Y-%m-%d")
-
-## Do the transformation
-dat.eventcounts.tr = dat.eventcounts
-dat.eventcounts.tr[,altmetricsColumns] = tr(dat.eventcounts.tr[,altmetricsColumns])
-
-# Write out the transformed data
-write.csv(dat.eventcounts.tr, "../data/derived/dat_eventcounts_tr.txt", row.names=F)
-
-# strip to research only 	
-dat = dat.eventcounts.tr
-isResearch = which(as.character(dat$articleType) == "Research Article")
-dat = dat[isResearch,]
-
-# Write out the transformed, research data
-write.csv(dat, "../data/derived/dat_eventcounts_tr_researchonly.txt", row.names=F)
 
 ### @export "normalize functions"
 
@@ -32,12 +13,12 @@ inWindow = function(x, windowSize=60) {
 	return(inWindowVals)
 }
 
-applyToWindow  = function(whichInWindow, y, fun) {
+applyToWindow  = function(whichInWindow, y, fun, ...) {
 	a = sapply(seq(along=y), function(i, x, y) {mean(y[x[[i]]], na.rm=T)}, whichInWindow, y)
 	return(a)
 }
 
-meanInWindow = function(whichInWindow, y) applyToWindow(whichInWindow, y, mean)
+meanInWindow = function(whichInWindow, y) applyToWindow(whichInWindow, y, mean, trim=0.05)
 varInWindow = function(whichInWindow, y) applyToWindow(whichInWindow, y, var)
 
 get_background = function(dat.input, cols, windowSize) {
@@ -62,13 +43,24 @@ plot_background = function(dat.input, dat.background, cols, title, xrange, yrang
 	title(paste("Trends over time ", title), outer=TRUE)	
 }
 
+
+dat.eventcounts = read.csv("../data/derived/event_counts_research.txt.gz", header=TRUE, sep=",", stringsAsFactors=FALSE)
+
+metadataColumns = c("doi", "pubDate", "daysSincePublished", "journal.x", "articleType", "authorsCount", "journal.y", "articleNumber", "year", "pubDateVal", "pmid", "plosSubjectTags", "plosSubSubjectTags", "title")
+altmetricsColumns = names(dat.eventcounts)[names(dat.eventcounts) %nin% metadataColumns]
+
+dat.eventcounts$pubDateVal = strptime(dat.eventcounts$pubDate, "%Y-%m-%d")
+dat.eventcounts$pubDateVal = as.POSIXct(dat.eventcounts$pubDateVal)
+
+dat = dat.eventcounts
+
 # Get ranges so all journals can be plotted on the same axes
 yrange = data.frame(column=altmetricsColumns)
 yrange$rangea = NA
 yrange$rangeb = NA
 for (col in altmetricsColumns) {
-	yrange$rangea[which(yrange$column==col)] = range(dat[,col], na.rm=T)[1]
-	yrange$rangeb[which(yrange$column==col)] = range(dat[,col], na.rm=T)[2]
+	yrange$rangea[which(yrange$column==col)] = quantile(dat[,col], c(0.05), na.rm=T)
+	yrange$rangeb[which(yrange$column==col)] = quantile(dat[,col], c(0.95), na.rm=T)
 }
 
 # Compute the background
@@ -82,6 +74,7 @@ for (journal in journals) {
 }
 
 summary(dat.background)
+summary(dat.background[["pbio"]])
 
 # Plot the background
 i = 0
@@ -94,6 +87,7 @@ for (journal in journals) {
 	plot_background(dat[inJournal, ], dat.background[[journal]], altmetricsColumns, title=journal, range(dat$pubDateVal), yrange)
 	dev.off()
 }
+
 
 # Now do the normalization
 i = 0
@@ -114,12 +108,13 @@ for (col in altmetricsColumns) {
 	png(filename, width=600, height=600)
 	par(mfrow = c(3, 1))
 	titletext = paste(col, "\nnot normalized by pubdate", sep="")
-	hist(dat.eventcounts[isResearch,col], breaks=50, main=titletext)
-	hist(dat[,col], breaks=50, main=paste("sqrt(1+", col, ")", "\nnot normalized by pubdate", sep=""))
-	hist(dat.norm[,col], breaks=50, main=paste("sqrt(1+", col, ")", "\nnormalized by mean of 180 day window within journal", sep=""))
+	hist(dat[,col], breaks=50, main=titletext)
+	hist(dat.norm[,col], breaks=50, main=paste("(1", col, ")", "\nnormalized by mean of 180 day window within journal", sep=""))
+	hist(log(0.01+dat.norm[,col]), breaks=50, main=paste("log(0.01+", col, ")", "\nnormalized by pubdate", sep=""))
 	dev.off()
 }
 
 
 # Write out the normalized data
-write.csv(dat.norm, "../data/derived/event_counts_normalized.txt", row.names=F)
+write.csv(dat.norm, "../data/derived/event_counts_research_normalized.txt", row.names=F)
+system("gzip ../data/derived/event_counts_research_normalized.txt")
