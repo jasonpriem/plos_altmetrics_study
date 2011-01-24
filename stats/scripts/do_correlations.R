@@ -1,10 +1,12 @@
 library(Hmisc)
 
-dat.not.norm = read.csv("../data/derived/dat_eventcounts_tr_researchonly.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
-dat.norm = read.csv("../data/derived/dat_eventcounts_tr_norm.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
+tr = function(x) {log(1+x)}
+
+dat.not.norm = read.csv("../data/derived/event_counts_research.txt.gz", header=TRUE, sep=",", stringsAsFactors=FALSE)
+dat.norm = read.csv("../data/derived/event_counts_research_normalized.txt.gz", header=TRUE, sep=",", stringsAsFactors=FALSE)
 dats = list()
-dats[["normalized"]] = dat.norm
-dats[["notNormalized"]] = dat.not.norm
+dats[["normalized"]] = tr(dat.norm[,c(altmetricsColumns)])
+dats[["notNormalized"]] = tr(dat.not.norm[,c(altmetricsColumns)])
 
 altmetricsColumns = c( "wosCount",
 "almScopusCount",
@@ -195,8 +197,8 @@ plot_heatmap = function (mycor, main, dend="none", Colv=F, withlabels=F) {
 	Colv = (dend=="both")
 	Rowv = (dend=="both")
 	if (withlabels==TRUE) {
-		textsize=1.5
-		marginsize=20
+		textsize=6
+		marginsize=40
 	} else {
 		textsize=.2
 		marginsize=.5
@@ -209,7 +211,7 @@ plot_heatmap = function (mycor, main, dend="none", Colv=F, withlabels=F) {
 		lmat=rbind( c(0, 3), c(2,1), c(0,4) ), lhei=c(0.1, 2, 0.1), 
 		trace = "none", margins=c(marginsize, marginsize), key=FALSE, keysize=0.1, main=main)
 }
-#plot_heatmap(mycor, type, withlabels=T)
+plot_heatmap(mycor, type, withlabels=T)
 
 
 ### @export "correlations of alt-metrics"

@@ -1,8 +1,8 @@
 library(Hmisc)
 
-dat.eventcounts = read.csv("../data/derived/dat_eventcounts_withwos.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
+dat.eventcounts = read.csv("../data/derived/event_counts_research.txt.gz", header=TRUE, sep=",", stringsAsFactors=FALSE)
 
-metadataColumns = c("doi", "pubDate", "daysSincePublished", "journal.x", "articleType", "authorsCount", "journal.y", "articleNumber", "year", "pubDateVal")
+metadataColumns = c("doi", "pubDate", "daysSincePublished", "journal.x", "articleType", "authorsCount", "journal.y", "articleNumber", "year", "pubDateVal", "title", "pmid", "plosSubjectTags", "plosSubSubjectTags")
 altmetricsColumns = names(dat.eventcounts)[names(dat.eventcounts) %nin% metadataColumns]
 
 dat.nonzero = dat.eventcounts

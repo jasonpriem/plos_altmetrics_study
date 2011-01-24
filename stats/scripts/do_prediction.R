@@ -1,4 +1,5 @@
 dat = read.csv("../data/derived/dat_with_factor_scores.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
+dat.norm = read.csv("../data/derived/event_counts_research_normalized.txt.gz", header=TRUE, sep=",", stringsAsFactors=FALSE)
 
 library(rms)
 library(plyr)
@@ -142,6 +143,54 @@ get.dat.events.merge = function() {
 #events.month.merge.num = events.month.merge[,events.cols]
 #events.month.merge.num[events.month.merge.num>0] = 1
 #apply(events.month.merge.num, 2, sum)
+
+fullCols = c( "wosCount",
+"pdfDownloadsCount",
+"htmlDownloadsCount",    
+"mendeleyReadersCount",     
+"almCiteULikeCount",        
+"plosCommentCount",         
+"plosCommentResponsesCount",
+"deliciousCount",
+"almBlogsCount",            
+"facebookCommentCount",          
+"facebookLikeCount",          
+"facebookShareCount",          
+"facebookClickCount",          
+"f1000Factor",              
+"wikipediaCites",           
+"backtweetsCount", "year")
+
+altCols = c( "wosCount",
+"mendeleyReadersCount",     
+"almCiteULikeCount",        
+"plosCommentCount",         
+"plosCommentResponsesCount",
+"deliciousCount",
+"almBlogsCount",            
+"facebookCommentCount",          
+"facebookLikeCount",          
+"facebookShareCount",          
+"facebookClickCount",          
+"f1000Factor",              
+"wikipediaCites",           
+"backtweetsCount", "year")
+
+baseCols = c("wosCount", "year")
+
+tr = function(x) {log(1+x)}
+
+fit.full = lm(wosCount ~ ., data=dat.norm[,c(fullCols, "authorsCount", "journal.x", "daysSincePublished")])
+fit.alt = lm(wosCount ~ ., data=dat.norm[,c(altCols, "authorsCount", "journal.x", "daysSincePublished")])
+fit.base = lm(wosCount ~ ., data=dat.norm[,c(baseCols, "authorsCount", "journal.x", "daysSincePublished")])
+
+fit.full = lm(wosCount ~ ., data=cbind(log(.1+dat.norm[,c(fullCols)]), dat.norm[,c("authorsCount", "journal.x", "daysSincePublished")]))
+fit.alt = lm(wosCount ~ ., data=cbind(log(.1+dat.norm[,c(altCols)]), dat.norm[,c("authorsCount", "journal.x", "daysSincePublished")]))
+fit.base = lm(wosCount ~ ., data=cbind(log(.1+dat.norm[,c(baseCols)]), dat.norm[,c("authorsCount", "journal.x", "daysSincePublished")]))
+
+summary(fit.full)
+summary(fit.alt)
+summary(fit.base)
 
 prediction.guts = function (dat.events.merge,  dat.eventcounts.2008, month, starting.day, num.days = 365) {
 	events.month.merge = get.events.month.merge(dat.events.merge, dat.eventcounts.2008, month, starting.day, num.days)

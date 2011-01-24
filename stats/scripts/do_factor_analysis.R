@@ -1,5 +1,5 @@
 mycorr = read.csv("../data/derived/dat_corr_pearson_normalized.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
-dat = read.csv("../data/derived/dat_eventcounts_tr_norm.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
+dat = read.csv("../data/derived/event_counts_research_normalized.txt.gz", header=TRUE, sep=",", stringsAsFactors=FALSE)
 
 library(psych)
 library(nFactors)
@@ -37,13 +37,10 @@ do.factor.analysis = function(num.factors) {
 	return(list(ml=fit.ml, fa=fit.fa.1st))
 }
 
-results = do.factor.analysis(4)
-factor.labels = c("downloads", "facebook", "citations", "comments")
+results = do.factor.analysis(5)
+factor.labels = c("wosCount", "facebookLike", "htmlDownloads", "plosComment", "mendeley")
 colnames(results[["fa"]]$loadings) = factor.labels
-
-results = do.factor.analysis(6)
-factor.labels = c("facebook", "downloads", "citations", "comments", "reading", "delicious")
-colnames(results[["fa"]]$loadings) = factor.labels
+results
 
 
 ### @export "factor analysis results"
