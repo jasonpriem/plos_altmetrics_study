@@ -1,8 +1,8 @@
 
 ## Could impute missing values
 
-mycorr = read.csv("../data/derived/event_counts_correlation.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
-dat = read.csv("../data/derived/event_counts_normalized.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
+mycorr = read.csv("../data/derived/corr_person_normalized.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
+dat = read.csv("../data/derived/research_event_counts_normalized.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
 
 library(psych)
 library(GPArotation)
