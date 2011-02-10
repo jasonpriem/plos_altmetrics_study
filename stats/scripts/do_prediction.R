@@ -1,5 +1,5 @@
-dat = read.csv("../data/derived/dat_with_factor_scores.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
-dat.norm = read.csv("../data/derived/event_counts_research_normalized.txt.gz", header=TRUE, sep=",", stringsAsFactors=FALSE)
+dat = read.csv("../data/derived/event_counts_factor_scores.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
+dat.norm = dat
 
 library(rms)
 library(plyr)
