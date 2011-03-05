@@ -1,3 +1,8 @@
+clean.raw.altmetrics.event.counts <- function
+### cleans raw altmetrics event count data
+(
+  ##title
+  filename, ##<< filename of raw data, in .txt or .txt.gz format
 #library(Rserve)
 #Rserve(args="--no-save")
 
