@@ -1,8 +1,28 @@
 
 ## Could impute missing values
 
-mycorr = read.csv("../data/derived/corr_person_normalized.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
-dat = read.csv("../data/derived/research_event_counts_normalized.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
+altmetricsColumns = c( "wosCount",
+"almScopusCount",
+"almPubMedCentralCount",
+"almCrossRefCount",
+"pdfDownloadsCount",        
+"htmlDownloadsCount",    
+"mendeleyReadersCount",     
+"almCiteULikeCount",        
+"plosCommentCount",         
+"plosCommentResponsesCount",
+"deliciousCount",
+"almBlogsCount",            
+"facebookCommentCount",          
+"facebookLikeCount",          
+"facebookShareCount",          
+"facebookClickCount",          
+"f1000Factor",              
+"wikipediaCites",           
+"backtweetsCount")
+
+mycorr = read.csv("../data/derived/corr_pearson_normalized.txt", header=TRUE, sep=",", stringsAsFactors=FALSE)
+dat = read.csv("../data/derived/event_counts_research_normalized.txt.gz", header=TRUE, sep=",", stringsAsFactors=FALSE)
 
 library(psych)
 library(GPArotation)
@@ -11,7 +31,7 @@ num.factors=6
 fit.fa.1st = fa(mycorr, num.factors, fm="minres", rotate="oblimin", 
                 scores=FALSE, residuals=TRUE, n.obs=max(dim(dat)))
 factor.labels = c("citations", "facebook", "downloads", "comments", "wikipedia+\nblogs", "bookmarks")
-colnames(results[["fa"]]$loadings) = factor.labels
+colnames(fit.fa.1st$loadings) = factor.labels
 print(fit.fa.1st, sort=TRUE)
 
 ########
@@ -44,18 +64,21 @@ set.seed(42)
 subsample = as.matrix(sample(as.data.frame(t(scores.1st)), 500, F))
 rownames(subsample) = factor.labels
 
-png(paste("../artifacts/factor_scores_heatmap.png", sep=""))
+library(gplots)
 
-heatmap.2(subsample, cexRow=0.9, cexCol = .9, symm = F, 
-	dend = "both", Colv=T, Rowv=T,
-	lmat=rbind( c(0, 3), c(2,1), c(0,4) ), lhei=c(1.5, 4, 2 ),
-	trace = "none", margins=c(10,10), key=T, keysize=0.1)
+#png(paste("../artifacts/factor_scores_heatmap.png", sep=""))
 
-dev.off()
+#heatmap.2(subsample, cexRow=0.9, cexCol = .9, symm = F, 
+#	dend = "both", Colv=T, Rowv=T,
+#	lmat=rbind( c(0, 3), c(2,1), c(0,4) ), lhei=c(1.5, 4, 2 ),
+#	trace = "none", margins=c(10,10), key=T, keysize=0.1)
+
+#dev.off()
 
 scores = as.data.frame(t(scores.1st))
 names(scores) = factor.labels
 
 dat.merge = cbind(dat.for.scores, scores.1st)
 write.csv(dat.merge, "../data/derived/event_counts_factor_scores.txt", row.names=F)
+system("gzip -f ../data/derived/event_counts_factor_scores.txt")
 

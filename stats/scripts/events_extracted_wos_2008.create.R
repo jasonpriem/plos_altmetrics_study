@@ -6,7 +6,7 @@ dim(dat.raw.wos)
 names(dat.raw.wos)
 
 ## Extract the info we need
-dat.raw.wos = read.csv("../data/raw/events_raw_wos_2008.txt", header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
+dat.raw.wos = read.csv("../data/raw/events_raw_wos_2008.txt.gz", header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
 
 dat.wos = data.frame(doi=dat.raw.wos$DI, wosCount=as.numeric(dat.raw.wos$TC), journal=dat.raw.wos$SO, articleNumber=dat.raw.wos$AR, year=dat.raw.wos$PY, stringsAsFactors=F) 
 
