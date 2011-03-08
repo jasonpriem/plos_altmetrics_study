@@ -1,0 +1,9 @@
+library(inlinedocs)
+setwd()
+
+package.skeleton.dx("altmetrics.analysis")
+
+customized a bit in R/.inlinedocs.R
+
+# see the documentation
+R CMD Rd2txt man/altmetrics.analysis-package.Rd
