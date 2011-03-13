@@ -31,7 +31,7 @@ For article Type, set NAs to "Research Article"
 and store as a factor
 
 Add a column for authorsCount}
-
+\value{return the cleaned dataframe}
 
 \author{Jason Priem and Heather Piwowar}
 

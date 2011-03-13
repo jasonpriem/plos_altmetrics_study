@@ -10,7 +10,7 @@ event_counts_altmetrics_cleaned_create <- function
     
     ##details<< Make sure all rows have good DOIs.  This also detects rogue line breaks.
     hasGoodDoi = "10." == substr(dat.raw.eventcounts$doi, 1, 3)
-    stopifnot(len(hasGoodDoi)==0)
+    stopifnot(all(hasGoodDoi))
     
     # Create a date-type variable for publication date
     dat.eventcounts$pubDate  = strptime(dat.eventcounts$pubDate, "%Y-%m-%dT")
@@ -56,7 +56,7 @@ event_counts_altmetrics_cleaned_create <- function
     ##details<< Add a column for authorsCount
     dat.eventcounts$authorsCount = as.numeric(dat.raw.eventcounts$authorsCount)
     
-    ## return the dataframe
-    dat.eventcounts
-
+    return(dat.eventcounts)
+    ### return the cleaned dataframe
 }
+

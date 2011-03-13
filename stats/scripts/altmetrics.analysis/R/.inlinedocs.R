@@ -14,3 +14,4 @@ parsers <-
 ## forall(FUN) returns a function that will apply FUN to all
 ## documentation objects in your package. Likewise, forfun(FUN) will
 ## apply FUN to all functions in your package.
+

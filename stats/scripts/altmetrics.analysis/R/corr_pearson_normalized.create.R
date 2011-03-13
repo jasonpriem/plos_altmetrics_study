@@ -48,10 +48,17 @@ altmetricsColumns = c( "wosCount",
 "wikipediaCites",           
 "backtweetsCount")
 
-tr = function(x) {log(1+x)}
-dat.norm = read.csv("../data/derived/event_counts_research_normalized.txt.gz", header=TRUE, sep=",", stringsAsFactors=FALSE)
-dat.norm.tr = tr(dat.norm[,c(altmetricsColumns)])
+corr_pearson_normalized_create = function 
+(
+    dat.norm ##<< Data frame to for correlation
+)
+{
+    tr = function(x) {log(1+x)}
+    dat.norm.tr = tr(dat.norm[,c(altmetricsColumns)])
 
-mycor.record = get.correlations(dat.norm.tr[,altmetricsColumns], use="pairwise.complete.obs", type="pearson")
-mycor = mycor.record$correlations
-write.csv(mycor, "../data/derived/corr_pearson_normalized.txt", row.names=F)
+    mycor.record = get.correlations(dat.norm.tr[,altmetricsColumns], use="pairwise.complete.obs", type="pearson")
+    mycor = mycor.record$correlations
+    return(mycor)
+    ### Returning the correlation
+}
+
