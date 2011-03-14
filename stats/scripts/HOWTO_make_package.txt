@@ -1,0 +1,81 @@
+# customized a bit in R/.inlinedocs.R
+
+
+#library(inlinedocs)
+
+# system("cp ./data/*.Rd ./man")  To copy all the data files over 
+
+#package.skeleton.dx("altmetrics.analysis")
+# R CMD Rd2txt altmetrics.analysis/man/event_counts_preprocessing_create.Rd 
+# rm altmetrics.analysis/man/z*.Rd
+
+# then in the directory above altmetrics.analysis, run this to build the package
+# R CMD install altmetrics.analysis
+
+# rm altmetrics.analysis/man/z*.Rd; R CMD install altmetrics.analysis
+
+# detach(package:altmetrics.analysis, unload=T)
+# library(altmetrics.analysis)
+# ?event_counts_altmetrics_cleaned_create
+
+# setwd("~/Documents/Projects/PLoSimpact/new/plos_altmetrics_study/stats/scripts")
+# a = event_counts_preprocessing_create("../data"); dim(a)
+
+
+write.table.gzip <- function
+## Simple function to call gzip to create a gz
+(data, # data frame to save
+basedir,  # directory
+filename   # filename
+) {
+    write.table(data, file=basedir || filename, row.names=F, sep="\t", col.names=names(data), na="NA")
+    system("gzip -f " || basedir || filename)
+    # system("cat " || filename || " | zcat | head -5")
+    # cat ../data/raw/event_counts_wos_raw.txt.gz | zcat | head -5
+}
+
+
+event_counts_preprocessing_create <- function
+### Do all the preprocessing on the altmetrics and ISI WoS data for PLoS study
+(
+  basedir ##<< Path to directory above the derived and raw data subdirectories
+)
+{
+  ##note<<documented using inlinedocs at http://inlinedocs.r-forge.r-project.org/
+
+  #read.csv works with gz but not zip
+  #read.csv works with gz but not zip
+  system(sprintf("unzip -o %s/raw/raw_event_counts.txt.zip -d %s/raw/", basedir, basedir))
+  system(sprintf("gzip -f %s/raw/raw_event_counts.txt", basedir))
+  dat_raw_event_counts = read.csv(file.path(basedir, "/raw/raw_event_counts.txt.gz"), header=TRUE, sep="\t", stringsAsFactors=FALSE)
+  save(dat_raw_event_counts, file="altmetrics.analysis/data/raw_event_counts.RData", compress="gzip")
+  
+  dat_altmetrics_cleaned = event_counts_altmetrics_cleaned_create(dat_raw_event_counts)
+  
+  write.table.gzip(dat_altmetrics_cleaned, basedir, "derived/event_counts_altmetrics_cleaned.txt")
+  
+  #python -u events_raw_wos_2008.create.py >> log.out
+
+  dat.raw.wos = read.csv(file.path(basedir,"raw/event_counts_wos_raw.txt.gz"), header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
+  save(dat.raw.wos, file="altmetrics.analysis/data/raw_wos.RData", compress="gzip")
+  
+  dat.extracted.wos = events_raw_wos_2008_create(dat.raw.wos)
+  
+  write.table.gzip(dat.extracted.wos, basedir, "derived/events_extracted_wos_2008.txt")
+  
+  dat.merged = event_counts_merged_cleaned_create(dat_altmetrics_cleaned, dat.extracted.wos)
+
+  # Write out the merged data
+  write.table.gzip(dat.merged, basedir, "derived/event_counts_merged_cleaned.txt")
+
+  #dat = event_counts_research(dat)
+  #dat = event_counts_normalized(dat)
+  #dat = corr_pearson_normalized(dat)
+  #dat = event_counts_factor_scores(dat)
+
+  dat = dat.merged
+
+  return(dat)
+  ### Returns the filename of the final somethingorother
+}
+

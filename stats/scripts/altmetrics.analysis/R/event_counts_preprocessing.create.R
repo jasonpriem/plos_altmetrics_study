@@ -1,31 +1,3 @@
-#library(inlinedocs)
-#package.skeleton.dx("altmetrics.analysis")
-# R CMD Rd2txt altmetrics.analysis/man/event_counts_altmetrics_cleaned_create.Rd 
-# rm altmetrics.analysis/man/z*.Rd
-
-# then in the directory above altmetrics.analysis, run this to build the package
-# R CMD install altmetrics.analysis
-
-# detach(package:altmetrics.analysis, unload=T)
-# library(altmetrics.analysis)
-# ?event_counts_altmetrics_cleaned_create
-
-# setwd("~/Documents/Projects/PLoSimpact/new/plos_altmetrics_study/stats/scripts")
-# a = event_counts_preprocessing_create("../data"); dim(a)
-
-
-write.table.gzip <- function
-## Simple function to call gzip to create a gz
-(data, ##< data frame to save
-basedir,  ##< directory
-filename   ##< filename
-) {
-    write.table(data, file=file.path(basedir, filename), row.names=FALSE, sep="\t", col.names=names(data), na="NA")
-    system(sprintf("gzip -f %s", file.path(basedir, filename)))
-    # cat ../data/raw/event_counts_wos_raw.txt.gz | zcat | head -5
-}
-
-
 event_counts_preprocessing_create <- function
 ### Do all the preprocessing on the altmetrics and ISI WoS data for PLoS study
 (
