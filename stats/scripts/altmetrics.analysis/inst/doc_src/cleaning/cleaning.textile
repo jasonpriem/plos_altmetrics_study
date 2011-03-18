@@ -1,0 +1,45 @@
+h1. Data collection and preprocessing
+
+For details on data collection, see **TODO DOC:  POINT TO WIKI**.
+**TODO DOC: Elsewhere, document how the ISI Web of Science data gets to this point **
+
+The following steps are performed in the file @counts_main.R@.
+
+h2. altmetrics crawler data
+
+h3. raw data
+
+This is what the raw crawler data looks like:
+
+{{ d['sections']['do_cleaning_idio.R|idio|rint|pyg']['dat_raw_event_counts'] }}
+
+h3. data cleaning
+
+Because the data has some idiosyncracies, it is then cleaned, as documented in @counts_clean_merge_filter.R@:
+
+<pre>
+{{ d['utils_cleaning.sh|bash'] }}
+</pre>
+
+After cleaning, here is what the crawler data looks like:
+
+{{ d['sections']['do_cleaning_idio.R|idio|rint|pyg']['clean_crawler_counts'] }}
+
+h2. ISI Web of Science Data
+
+This is what the raw ISI Wos data looks like:
+
+{{ d['sections']['do_cleaning_idio.R|idio|rint|pyg']['dat_raw_wos'] }}
+
+h2. Merge data from Crawler and WoS
+
+Irrelevant columns from the raw ISI WoS dataset are discarded, the relevant columns are renamed,  and the crawler and WoS data are merged by DOI.
+
+{{ d['sections']['do_cleaning_idio.R|idio|rint|pyg']['merge_crawler_and_wos_counts'] }}
+
+
+h2. Restrict to Research articles only
+
+Then restrict to research articles only:
+
+{{ d['sections']['do_cleaning_idio.R|idio|rint|pyg']['merge_crawler_and_wos_counts'] }}
