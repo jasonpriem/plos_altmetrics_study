@@ -18,13 +18,11 @@ altmetricsColumns = c( "wosCount",
 "wikipediaCites",           
 "backtweetsCount")
     
-counts_main <- function
-### Do all the preprocessing on the altmetrics and ISI WoS data for PLoS study
+get_research_articles <- function
+### Do processing to get the research articles
 (
     dat_raw_event_counts, ##<< raw event counts data from crawler SQL
-    dat_raw_wos,  ##<< raw ISI Web of Science event counts data from consolidation script
-    altmetricsColumns,  ##<< column names of metrics to include in correlation
-    number_factors ##<< Number of factors in factor analysis
+    dat_raw_wos  ##<< raw ISI Web of Science event counts data from consolidation script
 )
 {
   ##note<< documented using inlinedocs at http://inlinedocs.r-forge.r-project.org/
@@ -44,15 +42,41 @@ counts_main <- function
   ##details<<  Filter to just research articles
   dat.research = research_articles_only(dat.merged)
   
+  return(dat.research)
+  ### Return rearch articles
+
+  ##examples<<
+  data(dat_raw_event_counts)
+  data(dat_raw_wos)
+  get_research_articles = get_research_articles(dat_raw_event_counts, dat.raw.wos)
+}
+
+transformation_function = function(x) {log(1+x)}  
+     
+counts_main <- function
+### Do all the preprocessing on the altmetrics and ISI WoS data for PLoS study
+(
+    dat_raw_event_counts, ##<< raw event counts data from crawler SQL
+    dat_raw_wos,  ##<< raw ISI Web of Science event counts data from consolidation script
+    altmetricsColumns,  ##<< column names of metrics to include in correlation
+    number_factors ##<< Number of factors in factor analysis
+)
+{
+  ##note<< documented using inlinedocs at http://inlinedocs.r-forge.r-project.org/
+
+  ##details<<  Filter to just research articles
+  dat.research = get_research_articles(dat_raw_event_counts, dat.raw.wos)
+  
   ##details<<  Do normalization
   ## on the selected altmetrics columns
   dat.research.norm = normalize_altmetrics(dat.research, altmetricsColumns)
   
   ##details<< Do transformation
-  ## using log(1+x)
-  ## ; Only retain the altmetrics columns
-  transformation.function = function(x) {log(1+x)}  
-  dat.research.norm.transform = transformation.function(dat.research.norm[, altmetricsColumns])
+  #dat.research.norm.transform = dat.research.norm
+  #dat.research.norm.transform[, altmetricsColumns] = transformation_function(dat.research.norm[, altmetricsColumns])
+  
+  ##<< ; Only retain the altmetrics columns
+  dat.research.norm.transform = transformation_function(dat.research.norm[, altmetricsColumns])
   
   ##details<< Calculate correlation matrix
   ## using pairwise-complete observations and Pearson correlations

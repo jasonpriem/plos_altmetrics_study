@@ -17,7 +17,7 @@ clean_crawler_counts <- function
     
     ##details<< Create a column to store days since published
     dat.eventcounts$daysSincePublished = as.integer(difftime(max(dat.eventcounts$pubDate), dat.eventcounts$pubDate, units="days"))
-    hist(dat.eventcounts$daysSincePublished)
+    #hist(dat.eventcounts$daysSincePublished)
     
     ##details<< Adjust some fields to they are the right datatype.  In particular: 
     

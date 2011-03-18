@@ -72,20 +72,27 @@ applyWeightedWindow = function
 
 get_background = function
 ### Calculate the background for columns
-(dat.input, 
+(dat, 
     cols, ##<< Columns to normalize
-    windowSize ##<< window Size (IN WHAT UNITS???)
+    windowSize ##<< window Size in Days
     ) 
-{
+{    
     ##details<< Calculate which points fall within the window sizes once, 
     ## outside the loop, for efficiency
-	whichInWindow = inWindow(dat.input$daysSincePublished, windowSize)
+	whichInWindow = inWindow(dat$daysSincePublished, windowSize)
+
+    ##details<< Get the Date of publication in a computable format
+    dat$pubDateVal = strptime(dat$pubDate, "%Y-%m-%d")
+    dat$pubDateVal = as.POSIXct(dat$pubDateVal)
+
+    ##details<< Start by sorting by date, so that window will be applied properly
+    dat = dat[order(dat$pubDateVal),]
 	
-	dat.background = data.frame(pubDate = dat.input$pubDate)
+	dat.background = data.frame(pubDate = dat$pubDate)
 	##details<< For each column to be normalized, calculate the weighted mean for each point
 	for (col in cols) {
 		print(col)
-		dat.background[,col] = weighted_meanInWindow(whichInWindow, dat.input[,col])
+		dat.background[,col] = weighted_meanInWindow(whichInWindow, dat[,col])
 	}
 	
 	return(dat.background)
@@ -98,11 +105,14 @@ backgrounds_for_each_journal = function
 ### Calculate the background vectors for each journal, for each altmetric column
 (   dat, ##<< data frame that contains the journal, dates of publication, and altmetrics
     column.names.to.normalize, #<< Columns to normalize
-    window_width_in_days=365  ##<< Window width in days
+    window_width_in_days=365,  ##<< Window width in days
+    journals=NULL ##<< list of journals
 )
 {
     ##details<< Get all the names of the journal
-    journals = names(table(dat$journal.x))
+    if (length(journals) < 1) {
+        journals = names(table(dat$journal.x))
+    }
     
     ##details<< Initialize the list that will hold the background vectors for each journal
     dat.backgrounds = vector("list", length(journals))
@@ -119,30 +129,17 @@ backgrounds_for_each_journal = function
     ### Return a list that contains the background vectors for each journal for each altmetric column
 }
 
+WINDOW_WIDTH_IN_DAYS = 365
+
 normalize_altmetrics = function
 ### Normalize the altmetrics
 (
-    dat.eventcounts, ##<< data frame with eventcounts to normalize
+    dat, ##<< data frame with eventcounts to normalize
     column.names.to.normalize  ##<< columns with data to normalize
 )
 {
-    #metadataColumns = c("doi", "pubDate", "daysSincePublished", "journal.x", "articleType", "authorsCount", "journal.y", "articleNumber", "year", "pubDateVal", "pmid", "plosSubjectTags", "plosSubSubjectTags", "title")
-    #altmetricsColumns = names(dat.eventcounts)[names(dat.eventcounts) %nin% metadataColumns]
-
-    ##details<< Get the Date of publication in a computable format
-    dat.eventcounts$pubDateVal = strptime(dat.eventcounts$pubDate, "%Y-%m-%d")
-    dat.eventcounts$pubDateVal = as.POSIXct(dat.eventcounts$pubDateVal)
-
-    dat = dat.eventcounts
-
-    ##details<< Start by sorting by date, so that window will be applied properly
-    dat = dat[order(dat$pubDateVal),]
-
-    # Get ranges so all journals can be plotted on the same axes
-    ##get_ranges()
-
     ##details<<  Calculate background levels for each journal 
-    dat.backgrounds = backgrounds_for_each_journal(dat, column.names.to.normalize)
+    dat.backgrounds = backgrounds_for_each_journal(dat, column.names.to.normalize, WINDOW_WIDTH_IN_DAYS)
     journals = names(dat.backgrounds)
     
     #summary(dat.backgrounds)
@@ -166,76 +163,4 @@ normalize_altmetrics = function
 }
 
 
-####### BELOW this line was experimentation and visualization
-
-get_ranges = function(dat, column.names.to.normalize) {
-    yrange = data.frame(column=column.names.to.normalize)
-    yrange$rangea = NA
-    yrange$rangeb = NA
-    for (col in column.names.to.normalize) {
-    	yrange$rangea[which(yrange$column==col)] = quantile(dat[,col], c(0.01), na.rm=T)
-    	yrange$rangeb[which(yrange$column==col)] = quantile(dat[,col], c(0.99), na.rm=T)
-    }
-}
-
-plot_the_background2 = function(dat, dat.background, journals, column.names.to.normalize) {
-    i = 0
-    for (journal in journals) {
-    	print(journal)
-    	i = i+1
-    	inJournal = which(dat$journal.x==journal)
-    	#quartz()
-    	png(paste("../artifacts/mean_over_time_figure", i, ".png", sep=""), width=800, height=800)
-    	plot_background(dat[inJournal, ], dat.background[[journal]], column.names.to.normalize, title=journal, range(dat$pubDateVal), yrange, colour=rainbow(length(journals))[i])
-    	dev.off()
-    }
-
-    png(paste("../artifacts/mean_over_time_all.png", sep=""), width=800, height=800)
-    par(mfrow = c(ceiling(length(column.names.to.normalize)/4), 4), oma=c(2,2,4,2), mar=c(2, 1, 1, 1))
-    cols = column.names.to.normalize
-    xrange = range(dat$pubDateVal)
-    for (col in cols) {
-    	i=0
-    	allrange = c(yrange$rangea[which(yrange$column==col)], yrange$rangeb[which(yrange$column==col)])
-    	plot(xrange, allrange, type="n", main=col)
-    	for (journal in journals) {
-    		i = i+1
-    		inJournal = which(dat$journal.x==journal)
-    		journal.background = dat.background[[journal]]
-    		#quartz()		
-    		lines(dat[inJournal, "pubDateVal"], journal.background[,col], col=rainbow(length(journals))[i], lwd=3)
-    	}
-    }
-    title(paste("Trends over time per journal"), outer=TRUE)
-    dev.off()
-}
-
-plot_background = function(dat.input, dat.background, cols, title, xrange, yrange, colour) {
-	par(mfrow = c(ceiling(length(cols)/4), 4), oma=c(2,2,4,2), mar=c(2, 1, 1, 1))
-	for (col in cols) {
-		print(col)
-		allrange = c(yrange$rangea[which(yrange$column==col)], yrange$rangeb[which(yrange$column==col)])
-		plot(xrange, allrange, type="n", main=col)
-		points(dat.input$pubDateVal, dat.input[,col], main=col, col="black", pch=20, cex=.5)	
-		points(dat.input$pubDateVal, dat.background[,col], col=colour, lwd=3, main=col)
-	}
-	title(paste("Trends over time ", title), outer=TRUE)	
-}
-
-view_distributions = function(dat, dat.norm, column.names.to.normalize) {
-    ###Look at the distributions
-    i = 0
-    for (col in column.names.to.normalize) {
-    	i = i+1
-    	#quartz()
-    	filename = paste("../artifacts/hist_figure", i, ".png", sep="")
-    	png(filename, width=600, height=600)
-    	par(mfrow = c(3, 1))
-    	titletext = paste(col, "\nnot normalized by pubdate", sep="")
-    	hist(dat[,col], breaks=50, main=titletext)
-    	hist(dat.norm[,col], breaks=50, main=paste("(1", col, ")", "\nnormalized by mean of 180 day window within journal", sep=""))
-    	hist(log(1+dat.norm[,col]), breaks=50, main=paste("log(0.01+", col, ")", "\nnormalized by pubdate", sep=""))
-    	dev.off()
-    }
-}
 

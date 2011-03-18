@@ -1,7 +1,7 @@
 calc.correlations <- function
 ### Calculates correlations of matrix rows and columns, 
 ### Code inspired by hetcore.data.frame from library(polycor)
-(data, 
+(dat, 
     missing.method=c("complete.obs", "pairwise.complete.obs"), 
     correlation.method=c("pearson", "spearman")) 
 {
@@ -11,8 +11,8 @@ calc.correlations <- function
   mycorr <- matrix(1, p, p)
   for (i in 2:p) {
     for (j in 1:(i-1)){
-        x <- data[[i]]
-        y <- data[[j]]
+        x <- dat[[i]]
+        y <- dat[[j]]
         r <- cor(x, y, method=correlation.method, use=missing.method)
         mycorr[i, j] <- mycorr[j, i] <- r
      }
