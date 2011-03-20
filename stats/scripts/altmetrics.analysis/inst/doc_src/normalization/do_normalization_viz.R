@@ -131,7 +131,7 @@ plot_all_backgrounds_separately(dat.research, dat.backgrounds, altmetricsColumns
 plot_all_backgrounds_overlay(dat.research, dat.backgrounds, altmetricsColumns)
 
 # Could recalculate normalization, but this is slow
-#dat.research.norm = normalize_altmetrics(dat.research, altmetricsColumns)
+#dat.research.norm = normalize_altmetrics(dat.research, altmetricsColumns, journals)
 # Instead reload data from library
 data(dat_research_norm)
 

@@ -35,3 +35,19 @@ h2. How are the articles grouped by factor?
 
 !{width:600px;height:600px}file:///Users/hpiwowar/Documents/altmetrics.analysis/inst/doc_src/dexy_artifacts/heatmap_articles_factor_dend.png!
 
+What do clusters of articles look like, clustering on factor scores?
+
+!{width:600px;height:600px}file:///Users/hpiwowar/Documents/altmetrics.analysis/inst/doc_src/dexy_artifacts/heatmap_articles_factor_dend.png!
+
+
+!{width:600px;height:600px}file:///Users/hpiwowar/Documents/altmetrics.analysis/inst/doc_src/dexy_artifacts/heatmap_articles_factor_dend.png!
+
+
+h2.  What are not well represented by the factors?
+
+These a very low h2, suggesting they are not well represented by the factors
+
+<pre>
+wikipediaCites                    -0.08 0.128 0.219
+f1000Factor                       -0.02 0.031 0.005
+</pre>

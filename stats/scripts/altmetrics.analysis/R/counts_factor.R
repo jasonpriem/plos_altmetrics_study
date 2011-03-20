@@ -1,4 +1,40 @@
 
+
+
+na.mult = function(x, y) {
+    X = x
+    Y = y
+    print(dim(x))
+    print(dim(y))
+    for (i in 1:dim(x)[1]) {
+        for (j in 1:dim(y)[1]) {
+            for (k in 1:dim(y)[2]) {
+                if ((is.na(x[i, j]))&(y[j,k]==0)) {
+                    X[i,j] = 0
+                }
+                if ((is.na(y[j,k]))&(x[i,j]==0)) {
+                    Y[j,k] = 0
+                }
+            }
+        }
+    }
+    return(X%*%Y) 
+}
+
+na.mult3 <- function(x,y){ 
+  if (any(is.infinite(x))) {return(Inf)}
+  if (any(is.infinite(y))) {return(Inf)}
+  if (any(is.nan(x))) {return(Inf)}
+  if (any(is.nan(y))) {return(Inf)}
+  is.na(x)
+  is.na(y)
+  y==0 & is.na(x)
+  x==0
+  X<-x; #X[(is.na(x))&(y==0)]<-0; 
+  Y<-y; #Y[(is.na(Y))&(x==0)]<-0; 
+  return(X%*%Y) 
+}
+
 factor.scores.bartlett = function
 ### Calculate factor scores using Bartlett method
 ### Code is based on the middle of the factanal function in the stats package
@@ -7,6 +43,9 @@ factor.scores.bartlett = function
     na.action=NULL  ##<< what to do about NAs
 ) {
     Lambda <- fa.fit$loadings
+    
+    Lambda[Lambda < 0.1] = 0
+    
     z <- as.matrix(x)
     if (!is.numeric(z)) 
 #        stop("factor analysis applies only to numerical variables")
@@ -15,7 +54,7 @@ factor.scores.bartlett = function
     zz <- scale(z, TRUE, TRUE)
     d <- 1/fa.fit$uniquenesses
     tmp <- t(Lambda * d)
-    scores <- t(solve(tmp %*% Lambda, tmp %*% t(zz)))
+    scores <- t(solve(tmp %*% Lambda, na.mult(tmp, t(zz))))
     
     rownames(scores) <- rownames(z)
     colnames(scores) <- colnames(Lambda)

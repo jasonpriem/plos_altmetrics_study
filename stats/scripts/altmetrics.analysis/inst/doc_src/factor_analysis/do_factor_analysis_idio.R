@@ -12,9 +12,10 @@ mycor = calc.correlations(dat.research.norm.transform, "pairwise.complete.obs", 
 
 ### @export "factor analysis results"
 
-factor.labels = c("citations", "facebook", "downloads", "comments", "wikipedia+\nblogs", "bookmarks")
+factor.labels = c("citations", "facebookLike", "downloads", "comments", "bookmarks", "facebookClick")
 fa.results = do_factor_analysis(dat.research.norm.transform, mycor, length(factor.labels), factor.labels)
 fa.results
+
 
 
 

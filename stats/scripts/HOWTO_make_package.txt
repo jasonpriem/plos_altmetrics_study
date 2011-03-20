@@ -1,81 +1,64 @@
-# customized a bit in R/.inlinedocs.R
-
-
-#library(inlinedocs)
-
-# system("cp ./data/*.Rd ./man")  To copy all the data files over 
-
-#package.skeleton.dx("altmetrics.analysis")
-# R CMD Rd2txt altmetrics.analysis/man/event_counts_preprocessing_create.Rd 
-# rm altmetrics.analysis/man/z*.Rd
-
-# then in the directory above altmetrics.analysis, run this to build the package
-# R CMD install altmetrics.analysis
-
-# rm altmetrics.analysis/man/z*.Rd; R CMD install altmetrics.analysis
-
-# detach(package:altmetrics.analysis, unload=T)
-# library(altmetrics.analysis)
-# ?event_counts_altmetrics_cleaned_create
-
+# start by setting the working directory to one above the almetrics.analysis dir
 # setwd("~/Documents/Projects/PLoSimpact/new/plos_altmetrics_study/stats/scripts")
-# a = event_counts_preprocessing_create("../data"); dim(a)
+
+# copy all the data documentation to the man dir because inlinedocs doesn't handle data documentation
+system("cp altmetrics.analysis/data/*.Rd altmetrics.analysis/man")
+
+# now use inlinedocs to create the rest of the docs and prep the package
+library(inlinedocs)
+package.skeleton.dx("altmetrics.analysis")
+
+# can do this to see the created docs 
+system("R CMD Rd2txt altmetrics.analysis/man/normalize_altmetrics.Rd")
+
+# now build and install the package
+system("R CMD install altmetrics.analysis")
+
+# now load it into this running R session, unloading the already-loaded version first 
+detach(package:altmetrics.analysis, unload=T) 
+library(altmetrics.analysis)
+
+# do these to see if it loaded properly, documentation is there
+# ?normalize_altmetrics
+# data(package="altmetrics.analysis")
+# transformation_function(1)
+
+## To build the .tar.gz package for distribution, do this
+system("R CMD build altmetrics.analysis")
+## note it is pretty big since it contains several saved data() files
+## If you want a smaller version for distribution, with no data in it, do this
+system("R CMD install --no-data --build altmetrics.analysis")
 
 
-write.table.gzip <- function
-## Simple function to call gzip to create a gz
-(data, # data frame to save
-basedir,  # directory
-filename   # filename
-) {
-    write.table(data, file=basedir || filename, row.names=F, sep="\t", col.names=names(data), na="NA")
-    system("gzip -f " || basedir || filename)
-    # system("cat " || filename || " | zcat | head -5")
-    # cat ../data/raw/event_counts_wos_raw.txt.gz | zcat | head -5
-}
+# To add data to the package
+save(dat.research, file="altmetrics.analysis/data/dat_research.RData", compress="gzip")
+save(dat.backgrounds, file="altmetrics.analysis/data/dat_backgrounds.RData", compress="gzip")
+save(dat.research.norm, file="altmetrics.analysis/data/dat_research_norm.RData", compress="gzip")
+# Then to add documentation for the data, create .Rd files in the /data folder, copying from exisiting .Rd files.  Modify appropriately.
+# Then follow the steps for creating the library.  Don't forget to copy over the data documentation files to the man directory using system("cp altmetrics.analysis/data/*.Rd altmetrics.analysis/man")
+
+## Info on inlinedocs
+## Using inlinedocs to generate package documentation from inline comments within R package code (excluding R in vignettes in the /inst/doc_src directory)
+## See  http://inlinedocs.r-forge.r-project.org/
+## Made a few customizations in altmetrics.analysis/R/.inlinedocs.R
+
+## Info on dexy
+## Using dexy to generate vignettes in the /inst/doc directory using source in the /inst/doc_src directory
+## See http://www.dexy.it/
+## From a prompt in the docs_src directory, run this to make the index.html file:
+dexy --cache-dir=../doc --artifacts-dir=dexy_artifacts -sn .
+## Then to make each of the other vignettes, do this, substituting the end with the desired directory
+dexy --cache-dir=../doc --artifacts-dir=dexy_artifacts -s normalization/
+dexy --cache-dir=../doc --artifacts-dir=dexy_artifacts -s factor_analysis/
+## Then probably go into docs_src/artifacts directory to clean up by deleting everything except the image files.  Ideally these image files would be copied over to the /inst/doc directory automatically... work with @ananelson of @dexyit to do this... see TODO.
+## There seems to be a bug that sometimes the R doesn't run properly doing an incremental update, it can't find lots of things.  If this happens, add the -p flag to purge all old files in artifacts dir
 
 
-event_counts_preprocessing_create <- function
-### Do all the preprocessing on the altmetrics and ISI WoS data for PLoS study
-(
-  basedir ##<< Path to directory above the derived and raw data subdirectories
-)
-{
-  ##note<<documented using inlinedocs at http://inlinedocs.r-forge.r-project.org/
 
-  #read.csv works with gz but not zip
-  #read.csv works with gz but not zip
-  system(sprintf("unzip -o %s/raw/raw_event_counts.txt.zip -d %s/raw/", basedir, basedir))
-  system(sprintf("gzip -f %s/raw/raw_event_counts.txt", basedir))
-  dat_raw_event_counts = read.csv(file.path(basedir, "/raw/raw_event_counts.txt.gz"), header=TRUE, sep="\t", stringsAsFactors=FALSE)
-  save(dat_raw_event_counts, file="altmetrics.analysis/data/raw_event_counts.RData", compress="gzip")
-  
-  dat_altmetrics_cleaned = event_counts_altmetrics_cleaned_create(dat_raw_event_counts)
-  
-  write.table.gzip(dat_altmetrics_cleaned, basedir, "derived/event_counts_altmetrics_cleaned.txt")
-  
-  #python -u events_raw_wos_2008.create.py >> log.out
-
-  dat.raw.wos = read.csv(file.path(basedir,"raw/event_counts_wos_raw.txt.gz"), header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
-  save(dat.raw.wos, file="altmetrics.analysis/data/raw_wos.RData", compress="gzip")
-  
-  dat.extracted.wos = events_raw_wos_2008_create(dat.raw.wos)
-  
-  write.table.gzip(dat.extracted.wos, basedir, "derived/events_extracted_wos_2008.txt")
-  
-  dat.merged = event_counts_merged_cleaned_create(dat_altmetrics_cleaned, dat.extracted.wos)
-
-  # Write out the merged data
-  write.table.gzip(dat.merged, basedir, "derived/event_counts_merged_cleaned.txt")
-
-  #dat = event_counts_research(dat)
-  #dat = event_counts_normalized(dat)
-  #dat = corr_pearson_normalized(dat)
-  #dat = event_counts_factor_scores(dat)
-
-  dat = dat.merged
-
-  return(dat)
-  ### Returns the filename of the final somethingorother
-}
+## TODO:  the saved data has inconsistencies using underscores and internal . in var names and filenames
+## TODO:  the data documentation files need correcting and flushing out (in /data/*.Rd)
+## TODO:  work with @ananelson of @dexyit to the figures that are currently created in the dexy_artifact folder copyied over into the cache directories automatically.
+## TODO:  Use relative paths to figures in the .textile documentation.  Done this way for now to support easy preview of .textile files within TextMate
+## TODO:  work with @ananelson of @dexyit to get these .textile documents into full R vignette format.  Probably using redhatl dexy filter to go to .tex, then add latex and R vignette header and footer, then through latex filter to create PDF. 
+## TODO:  work with @ananelson of @dexyit to understand and fix strange problem where R sometimes doesn't run properly (lots of "not found") in subsequent reruns without using -p option
 

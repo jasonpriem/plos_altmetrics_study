@@ -65,6 +65,13 @@ applyWeightedWindow = function
 	##<< standardize the height by dividing by the dotproduct by the area of the window
 	inner = (signal_values %*% window) / sum(window)
 	
+	##<< If there aren't at least 50 values>0 in the window, then not enough data to normalize well,
+	##<< so consider the background to be NA.  This will result in a normalized value of NA
+	##<< for any points normalized with this background point.
+	if (sum(signal_values > 0) < 50) {
+	    inner = NA
+    }
+    	    
 	return(inner)
 	### Return the convolved signal
 }
@@ -106,7 +113,7 @@ backgrounds_for_each_journal = function
 (   dat, ##<< data frame that contains the journal, dates of publication, and altmetrics
     column.names.to.normalize, #<< Columns to normalize
     window_width_in_days=365,  ##<< Window width in days
-    journals=NULL ##<< list of journals
+    journals=NULL ##<< list of journals.  NULL means do all journals in journal.x column
 )
 {
     ##details<< Get all the names of the journal
@@ -135,12 +142,13 @@ normalize_altmetrics = function
 ### Normalize the altmetrics
 (
     dat, ##<< data frame with eventcounts to normalize
-    column.names.to.normalize  ##<< columns with data to normalize
+    column.names.to.normalize,  ##<< columns with data to normalize
+    journals=NULL ##<< list of journals.  NULL means do all journals in journal.x column
 )
 {
     ##details<<  Calculate background levels for each journal 
-    dat.backgrounds = backgrounds_for_each_journal(dat, column.names.to.normalize, WINDOW_WIDTH_IN_DAYS)
-    journals = names(dat.backgrounds)
+    dat.backgrounds = backgrounds_for_each_journal(dat, column.names.to.normalize, WINDOW_WIDTH_IN_DAYS, journals)
+    journals_with_backgrounds = names(dat.backgrounds)
     
     #summary(dat.backgrounds)
     #summary(dat.backgrounds[["pbio"]])
@@ -151,7 +159,7 @@ normalize_altmetrics = function
     ##<< Apply the normalizations for each journal in turn
     ## Initialize the normalized dataframe to match the incoming data frame
     dat.norm = dat
-    for (journal in journals) {
+    for (journal in journals_with_backgrounds) {
     	print(journal)
     	inJournal = which(dat$journal.x==journal)
     	## then overwrite it with the normalized values

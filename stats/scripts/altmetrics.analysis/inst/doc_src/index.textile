@@ -11,8 +11,8 @@ The package documentation was generated from inline documentation using "inlined
 h2.  vignettes
 
 * "cleaning":cleaning/cleaning.html
-* "normalization":normalization/normalization.html
 * "description":description/description.html
+* "normalization":normalization/normalization.html
 * "correlation":correlation/correlation.html
 * "factor analysis":factor_analysis/factor_analysis.html
 * "prediction":prediction/prediction.html

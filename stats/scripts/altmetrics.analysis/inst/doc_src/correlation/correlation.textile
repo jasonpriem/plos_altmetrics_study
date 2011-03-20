@@ -1,4 +1,3 @@
-{% set num_mean_over_time_figures = 20 %}
 
 h1. How correlated are the alt-metrics?
 

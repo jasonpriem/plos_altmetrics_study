@@ -5,8 +5,8 @@ calc.correlations <- function
     missing.method=c("complete.obs", "pairwise.complete.obs"), 
     correlation.method=c("pearson", "spearman")) 
 {
-  if (missing.method == "complete.obs") data <- na.omit(data)
-  p <- length(data)
+  if (missing.method == "complete.obs") dat <- na.omit(dat)
+  p <- length(dat)
   if (p < 2) stop("fewer than 2 variables.")
   mycorr <- matrix(1, p, p)
   for (i in 2:p) {
@@ -17,7 +17,7 @@ calc.correlations <- function
         mycorr[i, j] <- mycorr[j, i] <- r
      }
   }
-  rownames(mycorr) <- colnames(mycorr) <- names(data)
+  rownames(mycorr) <- colnames(mycorr) <- names(dat)
   
   mycorr
   ### Return the correlation matrix

@@ -17,6 +17,8 @@ altmetricsColumns = c( "wosCount",
 "f1000Factor",              
 "wikipediaCites",           
 "backtweetsCount")
+
+transformation_function = function(x) {log(1+x)}  
     
 get_research_articles <- function
 ### Do processing to get the research articles
@@ -51,7 +53,6 @@ get_research_articles <- function
   get_research_articles = get_research_articles(dat_raw_event_counts, dat.raw.wos)
 }
 
-transformation_function = function(x) {log(1+x)}  
      
 counts_main <- function
 ### Do all the preprocessing on the altmetrics and ISI WoS data for PLoS study
@@ -66,28 +67,28 @@ counts_main <- function
 
   ##details<<  Filter to just research articles
   dat.research = get_research_articles(dat_raw_event_counts, dat.raw.wos)
+  #save(dat.research, file="altmetrics.analysis/data/dat_research.RData", compress="gzip")
   
   ##details<<  Do normalization
   ## on the selected altmetrics columns
   dat.research.norm = normalize_altmetrics(dat.research, altmetricsColumns)
+  #save(dat.research.norm, file="altmetrics.analysis/data/dat_research_norm.RData", compress="gzip")
   
   ##details<< Do transformation
-  #dat.research.norm.transform = dat.research.norm
-  #dat.research.norm.transform[, altmetricsColumns] = transformation_function(dat.research.norm[, altmetricsColumns])
-  
-  ##<< ; Only retain the altmetrics columns
-  dat.research.norm.transform = transformation_function(dat.research.norm[, altmetricsColumns])
+  dat.research.norm.transform = dat.research.norm
+  dat.research.norm.transform[, altmetricsColumns] = transformation_function(dat.research.norm[, altmetricsColumns])
   
   ##details<< Calculate correlation matrix
   ## using pairwise-complete observations and Pearson correlations
-  mycor = calc.correlations(dat.research.norm.transform, "pairwise.complete.obs", "pearson")
+  mycor = calc.correlations(dat.research.norm.transform[, altmetricsColumns], "pairwise.complete.obs", "pearson")
   
   ##details<<  Run exploratory factor analysis and calculate factor scores
   ## Applying factor names that we know only because we've already run this and 
   ## looked at the results
-  factor.labels = c("citations", "facebook", "downloads", "comments", "wikipedia+\nblogs", "bookmarks")
+  factor.labels = c("citations", "facebookLike", "downloads", "comments", "bookmarks", "facebookClick")
   dat.with.factor.scores = get_factor_scores(dat.research.norm.transform, mycor, number_factors, factor.labels)
-
+  #save(dat.with.factor.scores, file="altmetrics.analysis/data/dat_with_factor_scores.RData", compress="gzip")
+  
   return(dat.with.factor.scores)
   ### Returns dataframe that contains factor scores
   
