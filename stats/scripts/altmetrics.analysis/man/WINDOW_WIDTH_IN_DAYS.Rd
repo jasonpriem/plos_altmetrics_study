@@ -1,0 +1,11 @@
+\name{WINDOW_WIDTH_IN_DAYS}
+\alias{WINDOW_WIDTH_IN_DAYS}
+\docType{data}
+\title{WINDOW WIDTH IN DAYS}
+
+\usage{WINDOW_WIDTH_IN_DAYS}
+
+
+
+
+

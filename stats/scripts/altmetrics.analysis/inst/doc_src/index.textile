@@ -1,3 +1,8 @@
+p{display: none}.  notextile.  \documentclass[a4paper,12pt]{article}
+\usepackage{graphicx}
+\begin{document}
+notextile.  %\VignetteIndexEntry{An R Package for altmetrics analysis}
+
 h1.  alt-metrics
 
 h2.  about the project
@@ -21,7 +26,9 @@ h3.  To generate these vignettes
 
 These vignettes were generated using "dexy":http://www.dexy.it/ rather than Sweave.  Documentation source (R source code, textile mark-up text, and .dexy config file) is in the "../doc_src":../docs_src directory.
 
-To run Dexy to generate these docs:
+To run @dexy@ to generate these docs:
 @cd docs_src@
-@dexy --cache-dir=../doc --artifacts-dir=dexy_artifacts -s .@
+@bash make_vignettes.bash cleaning description correlation normalization factor_analysis prediction@
 
+
+p{display: none}.  notextile.  \end{document}

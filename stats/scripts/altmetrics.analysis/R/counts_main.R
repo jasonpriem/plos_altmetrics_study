@@ -24,7 +24,7 @@ get_research_articles <- function
 ### Do processing to get the research articles
 (
     dat_raw_event_counts, ##<< raw event counts data from crawler SQL
-    dat_raw_wos  ##<< raw ISI Web of Science event counts data from consolidation script
+    dat.raw.wos  ##<< raw ISI Web of Science event counts data from consolidation script
 )
 {
   ##note<< documented using inlinedocs at http://inlinedocs.r-forge.r-project.org/
@@ -58,7 +58,7 @@ counts_main <- function
 ### Do all the preprocessing on the altmetrics and ISI WoS data for PLoS study
 (
     dat_raw_event_counts, ##<< raw event counts data from crawler SQL
-    dat_raw_wos,  ##<< raw ISI Web of Science event counts data from consolidation script
+    dat.raw.wos,  ##<< raw ISI Web of Science event counts data from consolidation script
     altmetricsColumns,  ##<< column names of metrics to include in correlation
     number_factors ##<< Number of factors in factor analysis
 )
@@ -93,6 +93,7 @@ counts_main <- function
   ### Returns dataframe that contains factor scores
   
   ##examples<<
+  library(altmetrics.analysis)
   data(dat_raw_event_counts)
   data(dat_raw_wos)
   dat.with.factor.scores = counts_main(dat_raw_event_counts, dat.raw.wos, altmetricsColumns, 6)

@@ -1,3 +1,5 @@
+### Necessary to avoid problems with fancy quotes in p-value reporting!
+options(useFancyQuotes = FALSE)
 
 library(psych)
 library(nFactors)
@@ -99,7 +101,7 @@ get_complete_cases = function(dat, columns){
 
 do_scree_wss_plot = function(dat, add=F){
     wss <- (nrow(dat)-1) * sum(apply(dat,2,var))
-    for (i in 2:15) wss[i] <- sum(kmeans(dat, centers=i)$withinss)
+    for (i in 2:15) wss[i] <- sum(kmeans(dat, centers=i, iter.max=100)$withinss)
     if (add) {
         lines(1:15, wss, type="b", xlab="Number of Clusters", ylab="Within groups sum of squares")
     } else {
@@ -109,13 +111,13 @@ do_scree_wss_plot = function(dat, add=F){
 
 scree_plot_for_number_clusters = function(dat){
     # Determine number of clusters
-    #png("scree_article_clusters.png", width=500, height=500)  
-    quartz()
+    png("scree_article_clusters.png", width=500, height=500)  
+    #quartz()
     do_scree_wss_plot(dat, F)
     for (i in 1:10){
         do_scree_wss_plot(dat, T)        
     }  
-    #dev.off()
+    dev.off()
 }
 
 cluster_assignments = function(dat, number.clusters){
@@ -150,12 +152,12 @@ factor.labels.plus = c(factor.labels, "f1000Factor", "wikipediaCites")
 #factor.labels.plus = factor.labels
 heatmap_of_articles_factors(dat.with.factor.scores, factor.labels.plus, filename = "heatmap_articles_factor_dend.png")
 
-dat.complete = get_complete_cases(dat.with.factor.scores, factor.labels.plus)
+dat.complete = get_complete_cases(dat.with.factor.scores, c(factor.labels.plus, "journal.x", "year", "authorsCount", "doi"))
 scree_plot_for_number_clusters(dat.complete[,factor.labels.plus])
 
-source("clustergram.R") 
-set.seed(42)
-quartz(); clustergram(dat.complete[1:2000,factor.labels.plus], line.width = .001)
+#source("clustergram.R") 
+#set.seed(42)
+#quartz(); clustergram(dat.complete[1:2000,factor.labels.plus], line.width = .001)
 
 NUMBER.CLUSTERS = 8
 
@@ -174,6 +176,6 @@ round(prop.table(table(dat_with_cluster_assignments$cluster, cut(dat_with_cluste
 cluster_fit$size
 
 set.seed(42)
-exemplars = by(dat_with_cluster_assignments, list(dat_with_cluster_assignments$cluster), FUN=function(x) x[sample(1:nrow(x), 10), c(1, 34:40)] ) #returns a list with 6 members each of which has a three row dataframe
+exemplars = by(dat_with_cluster_assignments, list(dat_with_cluster_assignments$cluster), FUN=function(x) x[sample(1:nrow(x), 10), c("doi", "cluster", factor.labels)])
 exemplars
 

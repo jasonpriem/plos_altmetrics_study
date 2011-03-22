@@ -1,6 +1,9 @@
 #Code from http://www.r-statistics.com/tag/r-code/
 #Thanks to Tal Galili for R implementation
-#Clustergrams introduced by Matthias Schonlau 2002 in “The Stata Journal” 
+#Clustergrams introduced by Matthias Schonlau 2002 in "The Stata Journal"
+
+### Necessary to avoid problems with fancy quotes in p-value reporting!
+options(useFancyQuotes = FALSE)
 
 
 clustergram.kmeans <- function(Data, k, ...)

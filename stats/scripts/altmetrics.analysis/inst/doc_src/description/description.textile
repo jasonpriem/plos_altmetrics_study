@@ -1,0 +1,38 @@
+h1. What do the alt-metrics look like?
+
+h2.  What does this sample look like?
+
+Which altmetrics are included?
+
+{{ d['sections']['do_description_idio.R|idio|rint|pyg']['altmetricsColumns'] }}
+
+Number of articles across time
+
+{{ d['sections']['do_description_idio.R|idio|rint|pyg']['articles by year'] }}
+
+Across journal
+
+{{ d['sections']['do_description_idio.R|idio|rint|pyg']['articles by journal'] }}
+
+
+h2. Number of occurrences
+
+
+**proportion of research articles with at least one event, by alt-metric**
+{{ d['sections']['do_description_idio.R|idio|rint|pyg']['research articles with at least one event'] }}
+
+**histogram of research articles by number of alt-metric types for which they have at least one event**
+
+All research articles have at least one event for PDF, html, and xml downloads.  Very few articles have events from all the alt-metrics.
+
+
+
+h2. Distribution of eventcounts by journal
+
+See the Normalization page to see distributions of altmetrics by journals.
+
+!{width:600px;height:600px}file:///Users/hpiwowar/Documents/altmetrics.analysis/inst/doc_src/dexy_artifacts/hist_research_nonzero_event_counts.png!
+
+!{width:600px;height:600px}file:///Users/hpiwowar/Documents/altmetrics.analysis/inst/doc_src/dexy_artifacts/hist_days_since_published.png!
+
+

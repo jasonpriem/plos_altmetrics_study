@@ -148,15 +148,17 @@ normalize_altmetrics = function
 {
     ##details<<  Calculate background levels for each journal 
     dat.backgrounds = backgrounds_for_each_journal(dat, column.names.to.normalize, WINDOW_WIDTH_IN_DAYS, journals)
+    #save(dat.backgrounds, file="altmetrics.analysis/data/dat_backgrounds.RData", compress="gzip")
+    
     journals_with_backgrounds = names(dat.backgrounds)
     
     #summary(dat.backgrounds)
     #summary(dat.backgrounds[["pbio"]])
 
     # Plot the background
-    ##plot_the_backgrounds(dat.backgrounds)
+    # plot_the_backgrounds(dat.backgrounds)
 
-    ##<< Apply the normalizations for each journal in turn
+    ##details<< Apply the normalizations for each journal in turn
     ## Initialize the normalized dataframe to match the incoming data frame
     dat.norm = dat
     for (journal in journals_with_backgrounds) {

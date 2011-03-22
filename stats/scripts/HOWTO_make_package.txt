@@ -53,7 +53,10 @@ dexy --cache-dir=../doc --artifacts-dir=dexy_artifacts -s factor_analysis/
 ## Then probably go into docs_src/artifacts directory to clean up by deleting everything except the image files.  Ideally these image files would be copied over to the /inst/doc directory automatically... work with @ananelson of @dexyit to do this... see TODO.
 ## There seems to be a bug that sometimes the R doesn't run properly doing an incremental update, it can't find lots of things.  If this happens, add the -p flag to purge all old files in artifacts dir
 
-
+# To finish docs, convert html to PDF.  
+# Eventually dexy will do this, via latex to make vignette
+# Can do this on macs using the command line like this:
+# /System/Library/Printers/Libraries/convert -f all.html -o all.pdf
 
 ## TODO:  the saved data has inconsistencies using underscores and internal . in var names and filenames
 ## TODO:  the data documentation files need correcting and flushing out (in /data/*.Rd)

@@ -10,19 +10,20 @@ One ballpark suggests at least 3 variables per factor, so 20 alt-metrics/3 varia
 h2. Factor analysis results
 
 
-**decisions**
-
-- Using data with journal-specific normalization across time
-- Spearman correlations
-- all years
-- oblique factors to allow correlation between factors
-
 {{ d['sections']['do_factor_analysis_idio.R|idio|rint|pyg']['factor analysis results'] }}
 
 
 h2. What does the factor structure look like?
 
+(size of the circles is just related to the length of the text label)
+
 !{width:600px;height:600px}file:///Users/hpiwowar/Documents/altmetrics.analysis/inst/doc_src/dexy_artifacts/factor_analysis_diagram.png!
+
+h2.  What altmetrics are not well represented by the factors?
+
+Metrics with a very low h2, suggesting they have low commonality with any of the factors:
+
+{{ d['sections']['do_factor_analysis_idio.R|idio|rint|pyg']['factor analysis low communality'] }}
 
 
 h2. How are the factors correlated?
@@ -31,23 +32,49 @@ h2. How are the factors correlated?
 
 !{width:600px;height:600px}file:///Users/hpiwowar/Documents/altmetrics.analysis/inst/doc_src/dexy_artifacts/heatmap_factors_dend.png!
 
-h2. How are the articles grouped by factor?
 
-!{width:600px;height:600px}file:///Users/hpiwowar/Documents/altmetrics.analysis/inst/doc_src/dexy_artifacts/heatmap_articles_factor_dend.png!
+
+h2.  How do these factor scores cluster?  What kind of articles do these represent?
+
+Scree plot for number of clusters:
+
+!{width:600px;height:600px}file:///Users/hpiwowar/Documents/altmetrics.analysis/inst/doc_src/dexy_artifacts/scree_article_clusters.png!
 
 What do clusters of articles look like, clustering on factor scores?
 
+Here is one illustration with hierarchical factor scores:
+
 !{width:600px;height:600px}file:///Users/hpiwowar/Documents/altmetrics.analysis/inst/doc_src/dexy_artifacts/heatmap_articles_factor_dend.png!
 
+And here is another with k-means clustering
 
-!{width:600px;height:600px}file:///Users/hpiwowar/Documents/altmetrics.analysis/inst/doc_src/dexy_artifacts/heatmap_articles_factor_dend.png!
+Cluster centers:
+
+{{ d['sections']['do_factor_analysis_idio.R|idio|rint|pyg']['factor analysis cluster centers'] }}
+
+(Note clusters aren't in the same order in this illustation as the table above)
+
+!{width:600px;height:600px}file:///Users/hpiwowar/Documents/altmetrics.analysis/inst/doc_src/dexy_artifacts/article_cluster_centers.png!
+
+Distribution across the clusters by year:
+
+{{ d['sections']['do_factor_analysis_idio.R|idio|rint|pyg']['factor analysis cluster tables year'] }}
+
+Distribution across the clusters by journal:
+
+{{ d['sections']['do_factor_analysis_idio.R|idio|rint|pyg']['factor analysis cluster tables journal'] }}
+
+Distribution across the clusters by number of authors:
+
+{{ d['sections']['do_factor_analysis_idio.R|idio|rint|pyg']['factor analysis cluster tables authorsCount'] }}
+
+Visualization of clusters across the factor components:
+
+!{width:600px;height:600px}file:///Users/hpiwowar/Documents/altmetrics.analysis/inst/doc_src/dexy_artifacts/article_factor_cluster_pairs.png!
+
+Cluster exemplars for further study
+
+{{ d['sections']['do_factor_analysis_idio.R|idio|rint|pyg']['factor analysis cluster exemplars'] }}
 
 
-h2.  What are not well represented by the factors?
 
-These a very low h2, suggesting they are not well represented by the factors
-
-<pre>
-wikipediaCites                    -0.08 0.128 0.219
-f1000Factor                       -0.02 0.031 0.005
-</pre>

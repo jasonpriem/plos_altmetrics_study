@@ -22,7 +22,7 @@ Rather than doing a straight mean across this window, we do a weighted mean that
 
 We use a hamming window, which looks like this:
 
-!file:////Users/hpiwowar/Documents/altmetrics.analysis/inst/doc_src/dexy_artifacts/hamming.png!
+!file:///Users/hpiwowar/Documents/altmetrics.analysis/inst/doc_src/dexy_artifacts/hamming.png!
 
 
 h3.  Details
