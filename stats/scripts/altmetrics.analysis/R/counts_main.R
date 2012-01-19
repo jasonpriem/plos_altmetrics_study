@@ -16,7 +16,8 @@ altmetricsColumns = c( "wosCount",
 "facebookClickCount",          
 "f1000Factor",              
 "wikipediaCites",           
-"backtweetsCount")
+"backtweetsCount", 
+"TC")
 
 transformation_function = function(x) {log(1+x)}  
     
@@ -100,3 +101,21 @@ counts_main <- function
   dim(dat.with.factor.scores)
 }
 
+setup = function() {
+dat_raw_wos_2009 = read.csv("../../../data/raw/event_counts_wos_raw.txt.gz", header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
+dim(dat_raw_wos)
+save(dat_raw_wos, file="dat_raw_wos.RData")
+
+dat_raw_wos_2011 = read.csv("../../../data/raw_wos_2011.txt", header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="", row.names=NULL)
+dim(dat_raw_wos_2011)
+save(dat_raw_wos_2011, file="dat_raw_wos_2011.RData")
+
+
+dat_raw_event_counts = read.csv("../../../data/raw/raw_event_counts.txt.gz", header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
+save(dat_raw_event_counts, file = "dat_raw_event_counts.RData")
+dim(dat_raw_event_counts)
+
+    dat.raw.wos = dat_raw_wos_2009
+    number_factors = 6
+
+}

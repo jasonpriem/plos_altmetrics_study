@@ -55,7 +55,7 @@ applyWeightedWindow = function
 	signal_values = z[timing_values]
 
     ##details<< Uses the rms and signal libraries
-    library(rms)
+#HAPP    library(rms)
     library(signal)
 
 	##<< Get the weights for a Hamming window of this size

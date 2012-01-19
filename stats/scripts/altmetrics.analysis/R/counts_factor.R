@@ -79,8 +79,10 @@ do_factor_analysis = function
 
     ##details<< Factor analysis using fa() from the psych package  
     ## also "minres" and "oblimin"
+#    fa.results = fa(mycor, num.factors, fm="minres", rotate="oblimin", 
+#                    scores=FALSE, residuals=TRUE, n.obs=max(dim(dat)))
     fa.results = fa(mycor, num.factors, fm="minres", rotate="oblimin", 
-                    scores=FALSE, residuals=TRUE, n.obs=max(dim(dat)))
+                    residuals=TRUE, n.obs=max(dim(dat)))
                     
     ##details<< If factor labels are supplied (because this was run 
     ## previously and the results have been reviewed and named), then 

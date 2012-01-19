@@ -65,7 +65,7 @@ clean_crawler_counts <- function
 
 clean_wos_counts = function(
 ### Gets necessary Web of Science columns and does any necessary cleaning
-  dat.raw.wos ##<< Exracted WoS event data
+  dat.raw.wos ##<< Extracted WoS event data
 ) 
 {
   dat.wos = data.frame(doi=dat.raw.wos$DI, wosCount=as.numeric(dat.raw.wos$TC), journal=dat.raw.wos$SO, articleNumber=dat.raw.wos$AR, year=dat.raw.wos$PY, stringsAsFactors=FALSE) 
@@ -102,6 +102,8 @@ merge_crawler_and_wos_counts = function
   
   # Merge with eventcounts by DOI
   dat.merged = merge(dat.eventcounts.crawler, dat.eventcounts.wos, by.x="doi", by.y="doi", all.x=TRUE)
+
+  dat.merged = merge(dat.merged, dat_raw_wos_2011[,c("DI", "TC")], by.x="doi", by.y="DI", all.x=TRUE)
   
   return(dat.merged)
   ### Data frame with metrics for both altmetrics crawler event counts and ISI Web of Science event counts
