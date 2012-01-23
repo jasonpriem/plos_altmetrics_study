@@ -47,9 +47,7 @@ applyWeightedWindow = function
 	##<< Get the timing points that fall in this window
 	timing_values = x[[i]]
 
-	##<< set points in the signal that are NA to 0
 	z = y
-	z[which(is.na(z))] = 0	
 		
 	##<< Get the signal values that correspond to the timing values in the window
 	signal_values = z[timing_values]
@@ -63,12 +61,12 @@ applyWeightedWindow = function
 	
 	##<< Calculate dot product of the signal and the window, then 
 	##<< standardize the height by dividing by the dotproduct by the area of the window
-	inner = (signal_values %*% window) / sum(window)
+	inner = (signal_values %*% window)  / sum(ifelse(is.na(signal_values), 0, 1) %*% window)
 	
-	##<< If there aren't at least 50 values>0 in the window, then not enough data to normalize well,
+	##<< If there aren't at least 25 values>0 in the window, then not enough data to normalize well,
 	##<< so consider the background to be NA.  This will result in a normalized value of NA
 	##<< for any points normalized with this background point.
-	if (sum(signal_values > 0) < 50) {
+	if (sum(signal_values > 0, na.rm=T) < 25) {
 	    inner = NA
     }
     	    
@@ -84,16 +82,12 @@ get_background = function
     windowSize ##<< window Size in Days
     ) 
 {    
+    ##details<< Start by sorting by date, so that window will be applied properly
+    dat = dat[order(dat$pubDate),]
+
     ##details<< Calculate which points fall within the window sizes once, 
     ## outside the loop, for efficiency
 	whichInWindow = inWindow(dat$daysSincePublished, windowSize)
-
-    ##details<< Get the Date of publication in a computable format
-    dat$pubDateVal = strptime(dat$pubDate, "%Y-%m-%d")
-    dat$pubDateVal = as.POSIXct(dat$pubDateVal)
-
-    ##details<< Start by sorting by date, so that window will be applied properly
-    dat = dat[order(dat$pubDateVal),]
 	
 	dat.background = data.frame(pubDate = dat$pubDate)
 	##details<< For each column to be normalized, calculate the weighted mean for each point
@@ -118,7 +112,7 @@ backgrounds_for_each_journal = function
 {
     ##details<< Get all the names of the journal
     if (length(journals) < 1) {
-        journals = names(table(dat$journal.x))
+        journals = names(table(dat$journal))
     }
     
     ##details<< Initialize the list that will hold the background vectors for each journal
@@ -128,7 +122,7 @@ backgrounds_for_each_journal = function
     ##details<< For each journal, get the background level
     for (journal in journals) {
     	print(journal)
-    	inJournal = which(dat$journal.x==journal)
+    	inJournal = which(dat$journal==journal)
     	dat.backgrounds[[journal]] = get_background(dat[inJournal, ], column.names.to.normalize, window_width_in_days)
     } 
     
@@ -143,15 +137,21 @@ normalize_altmetrics = function
 (
     dat, ##<< data frame with eventcounts to normalize
     column.names.to.normalize,  ##<< columns with data to normalize
+    dat.backgrounds=NULL, #<< backgrounds
     journals=NULL ##<< list of journals.  NULL means do all journals in journal.x column
 )
 {
+    ##details<< Get all the names of the journal
+    if (length(journals) < 1) {
+        journals = names(table(dat$journal))
+    }
+    
     ##details<<  Calculate background levels for each journal 
-    dat.backgrounds = backgrounds_for_each_journal(dat, column.names.to.normalize, WINDOW_WIDTH_IN_DAYS, journals)
+    if (length(dat.backgrounds) < 1) {
+        dat.backgrounds = backgrounds_for_each_journal(dat, column.names.to.normalize, WINDOW_WIDTH_IN_DAYS, journals)
+    }
     #save(dat.backgrounds, file="altmetrics.analysis/data/dat_backgrounds.RData", compress="gzip")
-    
-    journals_with_backgrounds = names(dat.backgrounds)
-    
+        
     #summary(dat.backgrounds)
     #summary(dat.backgrounds[["pbio"]])
 
@@ -161,11 +161,11 @@ normalize_altmetrics = function
     ##details<< Apply the normalizations for each journal in turn
     ## Initialize the normalized dataframe to match the incoming data frame
     dat.norm = dat
-    for (journal in journals_with_backgrounds) {
+    for (journal in journals) {
     	print(journal)
-    	inJournal = which(dat$journal.x==journal)
+    	inJournal = which(dat$journal==journal)
     	## then overwrite it with the normalized values
-    	dat.norm[inJournal, column.names.to.normalize] = dat[inJournal, column.names.to.normalize] / dat.backgrounds[[journal]][,column.names.to.normalize]
+    	dat.norm[inJournal, column.names.to.normalize] = (dat[inJournal, column.names.to.normalize]) / (dat.backgrounds[[journal]][,column.names.to.normalize])
     }
     
     return(dat.norm)

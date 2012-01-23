@@ -10,12 +10,15 @@ clean_crawler_counts <- function
     ##details<< Make sure all rows have good DOIs.  This also detects rogue line breaks.
     hasGoodDoi = "10." == substr(dat.raw.eventcounts$doi, 1, 3)
     stopifnot(all(hasGoodDoi))
+    stopifnot(length(unique(dat.raw.eventcounts$doi)) == length(dat.raw.eventcounts$doi))
     
     # Create a date-type variable for publication date
     dat.eventcounts$pubDate  = strptime(dat.eventcounts$pubDate, "%Y-%m-%dT")
-    summary(dat.eventcounts$pubDate)
+    min(dat.eventcounts$pubDate)
+    max(dat.eventcounts$pubDate)
+    table(format(dat.eventcounts$pubDate, "%Y"))
     
-    ##details<< Create a column to store days since published
+    ##details<< Create a column to store days since published, relative to most recent paper in the set
     dat.eventcounts$daysSincePublished = as.integer(difftime(max(dat.eventcounts$pubDate), dat.eventcounts$pubDate, units="days"))
     #hist(dat.eventcounts$daysSincePublished)
     
@@ -56,6 +59,9 @@ clean_crawler_counts <- function
     
     ##details<< Add a column for authorsCount
     dat.eventcounts$authorsCount = as.numeric(dat.raw.eventcounts$authorsCount)
+
+    ##details<< Remove lines with NA pdfCount
+    dat.eventcounts = subset(dat.eventcounts, !is.na(pdfDownloadsCount))
     
     return(dat.eventcounts)
     ### return the cleaned dataframe
@@ -68,8 +74,11 @@ clean_wos_counts = function(
   dat.raw.wos ##<< Extracted WoS event data
 ) 
 {
-  dat.wos = data.frame(doi=dat.raw.wos$DI, wosCount=as.numeric(dat.raw.wos$TC), journal=dat.raw.wos$SO, articleNumber=dat.raw.wos$AR, year=dat.raw.wos$PY, stringsAsFactors=FALSE) 
+#  dat.wos = data.frame(doi=dat.raw.wos$DI, wosCount=as.numeric(dat.raw.wos$TC), journal=dat.raw.wos$SO, articleNumber=dat.raw.wos$AR, year=dat.raw.wos$PY, stringsAsFactors=FALSE) 
+  dat.wos = data.frame(doi=dat.raw.wos$DI, wosCount=as.numeric(dat.raw.wos$TC))
 
+  ## There might be a few duplicate rows.  remove them (some dup rows might have different citation counts.  oh well.)
+  dat.wos = subset(dat.wos, !duplicated(doi))
   ##note<< Removing citations with dates before publication date would happen at an earlier step
   
   return(dat.wos)
@@ -97,13 +106,13 @@ merge_crawler_and_wos_counts = function
   dat.eventcounts.crawler, ##<< data frame with crawler eventcounts, no WoS
   dat.eventcounts.wos    ##<< data frame with just WoS eventcounts
   ) 
-{
-  colnames(dat.eventcounts.wos) = c("doi","wosCount","journal","articleNumber","year")
-  
+{  
   # Merge with eventcounts by DOI
-  dat.merged = merge(dat.eventcounts.crawler, dat.eventcounts.wos, by.x="doi", by.y="doi", all.x=TRUE)
-
-  dat.merged = merge(dat.merged, dat_raw_wos_2011[,c("DI", "TC")], by.x="doi", by.y="DI", all.x=TRUE)
+  
+  dat.merged = merge(dat.eventcounts.crawler, dat.eventcounts.wos, by.x="doi", by.y="doi", all.x=TRUE, all.y=FALSE)
+  if ("wosCount" %in% names(dat.merged)) {
+      dat.merged$wosCount[which(is.na(dat.merged$wosCount))] = 0
+  }
   
   return(dat.merged)
   ### Data frame with metrics for both altmetrics crawler event counts and ISI Web of Science event counts
