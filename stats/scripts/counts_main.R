@@ -1,24 +1,3 @@
-altmetricsColumns = c( "wosCountThru2010", "wosCountThru2011",
-"almScopusCount",
-"almPubMedCentralCount",
-"almCrossRefCount",
-"pdfDownloadsCount",        
-"htmlDownloadsCount",    
-"mendeleyReadersCount",     
-"almCiteULikeCount",        
-"plosCommentCount",         
-"plosCommentResponsesCount",
-"deliciousCount",
-"almBlogsCount",            
-"facebookCommentCount",          
-"facebookLikeCount",          
-"facebookShareCount",          
-"facebookClickCount",          
-"f1000Factor",              
-"wikipediaCites",           
-"backtweetsCount")
-
-transformation_function = function(x) {log(1+x)}  
     
 get_research_articles <- function
 ### Do processing to get the research articles
@@ -91,7 +70,7 @@ counts_main <- function
   ## looked at the results
   factor.labels = c("citations", "facebookLike", "downloads", "comments", "bookmarks", "facebookClick")
   dat.with.factor.scores = get_factor_scores(dat.research.norm.transform, mycor, number_factors, factor.labels)
-  #save(dat.with.factor.scores, file="altmetrics.analysis/data/dat_with_factor_scores.RData", compress="gzip")
+  #save(dat.with.factor.scores, file="../data/dat_with_factor_scores.RData", compress="gzip")
   
   return(dat.with.factor.scores)
   ### Returns dataframe that contains factor scores
@@ -111,7 +90,7 @@ setup = function() {
 ##### create dat.research
     
 setwd("~/Documents/Projects/PLoSimpact/new/plos_altmetrics_study/stats/scripts")
-source("altmetrics.analysis/R/counts_clean_merge_filter.R")
+source("counts_clean_merge_filter.R")
     
 dat_raw_wos_2010 = read.csv("../data/raw/raw_wos_2010.txt.gz", header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
 dat_raw_wos_2011 = read.csv("../data/raw/raw_wos_2011.txt.gz", header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="", row.names=NULL)
@@ -134,8 +113,8 @@ save(dat.research, file = "../data/derived/dat_research.RData", compress="gzip")
 
 #### create dat.research.norm.transform
 
-source("altmetrics.analysis/R/counts_normalize.R")
-source("altmetrics.analysis/R/do_normalization_viz.R")
+source("counts_normalize.R")
+source("do_normalization_viz.R")
 
 altmetricsColumns = c( "wosCountThru2010", "wosCountThru2011",
 "almScopusCount",
@@ -178,7 +157,7 @@ save(dat.research.norm.transform, file = "../data/derived/dat_research_norm_tran
 
 #### look at clusters
 
-source("altmetrics.analysis/R/do_clustering_viz.R")
+source("do_clustering_viz.R")
 
 dat.for.cluster = subset(dat.research.norm.transform, journal=="pone")
 
@@ -190,6 +169,7 @@ clusterColumnsRawData = c("htmlDownloadsCount","mendeleyReadersCount","wosCountT
 dat.for.cluster = dat.for.cluster[complete.cases(dat.for.cluster[,clusterColumns]),]
 dim(dat.for.cluster)
 summary(dat.for.cluster[,clusterColumns])
+set.seed(42)
 scree_plot_for_number_clusters(dat.for.cluster[,clusterColumns])
 
 library(clValid)
@@ -199,7 +179,7 @@ stab = clValid(dat.for.cluster[1:1000,clusterColumns], 2:9, maxitems=1000, clMet
 
 NUMBER.CLUSTERS = 5
 set.seed(42)
-for (i in seq(1:5)){
+for (i in seq(1:4)){
     cluster_fit = cluster_assignments(dat.for.cluster[,clusterColumns], NUMBER.CLUSTERS)
     t(round(cluster_fit$centers, 1))
     dat_with_cluster_assignments <- data.frame(dat.for.cluster, cluster=factor(cluster_fit$cluster))
@@ -211,16 +191,21 @@ for (i in seq(1:5)){
     cluster_fit$size
 }
 
-
-round(prop.table(table(dat_with_cluster_assignments$cluster, dat_with_cluster_assignments$journal), 2), 2)
 round(prop.table(table(dat_with_cluster_assignments$cluster, format(dat_with_cluster_assignments$pubDate, "%Y")), 2), 2)
 round(prop.table(table(dat_with_cluster_assignments$cluster, cut(dat_with_cluster_assignments$authorsCount, c(9, 2, 5, 10, 200))), 2), 2)
 
 
 set.seed(42)
-exemplars = by(dat_with_cluster_assignments, list(dat_with_cluster_assignments$cluster), FUN=function(x) x[sample(1:nrow(x), 10), c("doi", "cluster", clusterColumns)])
+exemplars = by(dat_with_cluster_assignments, list(dat_with_cluster_assignments$cluster), FUN=function(x) x[sample(1:nrow(x), 10), c("doi", "title", "cluster", clusterColumns)])
 exemplars
+write.csv(exemplars[[1]], file="cluster_exemplars.csv", append=F)
 
+#  htmlDownloadsCount mendeleyReadersCount wosCountThru2011 f1000Factor wikipediaCites sharingCombo percent
+#1                0.7                  0.7              0.8         3.4            0.1             0.8    0.03	expert fav
+#2                0.8                  0.8              0.6         0.0            0.3             2.5    0.17	read and shared
+#3                1.9                  1.4              0.7         0.4            1.1             9.7    0.02	popular hit
+#4                0.5                  0.3              0.4         0.0            0.0             0.1    0.53	not much attention
+#5                0.7                  0.9              0.9         0.0            0.2             0.2    0.26	read and cited
 
 
 

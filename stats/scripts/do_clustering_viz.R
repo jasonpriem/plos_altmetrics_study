@@ -15,7 +15,7 @@ library(altmetrics.analysis)
 
 make_graphs = function(fa.results, factor.labels) {
     #quartz()
-    png(paste("factor_analysis_diagram.png", sep=""), width=500, height=500)
+    png(paste("img/factor_analysis_diagram.png", sep=""), width=500, height=500)
     fa.diagram(fa.results)
     dev.off()
 
@@ -24,7 +24,7 @@ make_graphs = function(fa.results, factor.labels) {
     colorChoices = bluered(32)[colorRange[1]:colorRange[2]]
 
     #quartz()
-    png(paste("heatmap_factors_nodend.png", sep=""), width=500, height=500)
+    png(paste("img/heatmap_factors_nodend.png", sep=""), width=500, height=500)
     heatmap.2(factors.cor, col=colorChoices, cexRow=1.5, cexCol = 1.5, symm = TRUE, 
     	labRow=factor.labels, labCol=factor.labels,
     	dend = "none", Colv=F, Rowv=F,
@@ -33,7 +33,7 @@ make_graphs = function(fa.results, factor.labels) {
     dev.off()
 
     #quartz()
-    png(paste("heatmap_factors_dend.png", sep=""), width=500, height=500)
+    png(paste("img/heatmap_factors_dend.png", sep=""), width=500, height=500)
     heatmap.2(factors.cor, col=colorChoices, cexRow=1.5, cexCol = 1.5, symm = TRUE, 
     	labRow=factor.labels, labCol=factor.labels,
     	dend = "both", Colv=T, Rowv=T,
@@ -51,7 +51,7 @@ make_graphs = function(fa.results, factor.labels) {
     fit.fa.1st.residuals = fa.results$residual
     
     #quartz()
-    #png(paste("heatmap_factor_residuals.png", sep=""), width=500, height=500)
+    #png(paste("img/heatmap_factor_residuals.png", sep=""), width=500, height=500)
     #heatmap.2(fit.fa.1st.residuals, col=bluered(16), cexRow=0.5, cexCol = .5, symm = TRUE, dend = "row", trace = "none", 
     #	margins=c(10,10), key=FALSE, keysize=0.1)
     #dev.off()
@@ -99,7 +99,7 @@ do_scree_wss_plot = function(dat, add=F){
 
 scree_plot_for_number_clusters = function(dat){
     # Determine number of clusters
-    #png("scree_article_clusters.png", width=500, height=500)  
+    #png("img/scree_article_clusters.png", width=500, height=500)  
     quartz()
     do_scree_wss_plot(dat, F)
     for (i in 1:25){
@@ -111,7 +111,7 @@ scree_plot_for_number_clusters = function(dat){
 cluster_assignments = function(dat, number.clusters){
     fit <- kmeans(dat, number.clusters, iter.max=1000)
     round(fit$centers, 1)
-    png("article_factor_cluster_pairs.png", width=500, height=500)        
+    png("img/article_factor_cluster_pairs.png", width=500, height=500)        
     plot(dat, col = fit$cluster)
     points(fit$centers, col = 1:2, pch = 8, cex=2)
     dev.off()
@@ -121,8 +121,8 @@ cluster_assignments = function(dat, number.clusters){
 plot_cluster_centers = function(cluster_fit){
   round(cluster_fit$centers, 1)
   m=200
-  #png("article_cluster_centers.png", width=500, height=500) 
-  quartz()
+  png("img/article_cluster_centers.png", width=500, height=500) 
+  #quartz()
   #cluster_labels = paste(colnames(t(cluster_fit$centers)), " (", table(cluster_fit$cluster), ")", sep="")       
   cluster_labels = paste("cluster ", colnames(t(cluster_fit$centers)), " (", round(100*cluster_fit$size/sum(cluster_fit$size), 0), "%)", sep="")       
   heatmap.2(t(cluster_fit$centers), col=bluered(m*2)[1:(m*2-1)], 
@@ -131,7 +131,7 @@ plot_cluster_centers = function(cluster_fit){
      	lmat=rbind( c(0, 3), c(2,1), c(0,4) ), lhei=c(1.5, 4, 2 ),
      	margins=c(1,10), key=FALSE, keysize=0.1, scale="row", symbreaks=T)
   title(paste("PLoS articles\n(n=", length(cluster_fit$cluster), ")", sep=""))
-  #dev.off()
+  dev.off()
 }
 
 ### @export "scree"
@@ -142,7 +142,7 @@ plot_cluster_centers = function(cluster_fit){
 #mycor = calc.correlations(dat.research.norm.transform[, altmetricsColumns], "pairwise.complete.obs", "pearson")
 
 #eigenvectors.1st <- eigen(mycor) # get eigenvalues
-#png("scree_plot.png")
+#png("img/scree_plot.png")
 #plot(eigenvectors.1st$values)
 #dev.off()
 
@@ -181,15 +181,11 @@ do_factor_analysis_viz = function() {
     exemplars
 
 
-
-
-
-
     dat.with.factor.scores = get_factor_scores(dat.research.norm.transform, mycor, length(factor.labels), factor.labels)
 
     factor.labels.plus = c(factor.labels, "f1000Factor", "wikipediaCites")
     #factor.labels.plus = factor.labels
-    heatmap_of_articles_factors(dat.with.factor.scores, factor.labels.plus, filename = "heatmap_articles_factor_dend.png")
+    heatmap_of_articles_factors(dat.with.factor.scores, factor.labels.plus, filename = "img/heatmap_articles_factor_dend.png")
 
     dat.complete = get_complete_cases(dat.with.factor.scores, c(factor.labels.plus, "journal.x", "year", "authorsCount", "doi"))
     scree_plot_for_number_clusters(dat.complete[,factor.labels.plus])
