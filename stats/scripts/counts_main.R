@@ -212,10 +212,6 @@ write.csv(exemplars[[1]], file="cluster_exemplars.csv", append=F)
 #########  factor analysis
 
 
-data(dat_research_norm)
-dat.research.norm.transform = dat.research.norm
-dat.research.norm.transform[, altmetricsColumns] = transformation_function(dat.research.norm[, altmetricsColumns])
-
 factorColumns = c("wosCountThru2011",
 "wosCountThru2010",
 #"almScopusCount",
@@ -248,8 +244,10 @@ get_complete_cases = function(dat, columns){
 
 
 ### do I want this to be jsut for plos one, or all ????  needs to be consistent with below
+set.seed(42)
 scree_plot_for_number_clusters(get_complete_cases(dat.research.norm.transform[,factorColumns]))
 
+set.seed(42)
 fa.results = do_factor_analysis(dat.research.norm.transform[,factorColumns], mycor, 5)
 
 
@@ -263,37 +261,109 @@ fa.results$communality[which(fa.results$communality < .15)]
 factor.labels = c("facebook", "downloads", "citations", "comments", "bookmarks")
 factor.labels.plus = c(factor.labels, "f1000Factor", "wikipediaCites")
 
-make_graphs(fa.results, factor.labels)
+plot_factor_analysis(fa.results, factor.labels)
 
-dat.with.factor.scores = get_factor_scores(dat.for.cluster, mycor, length(factor.labels), factor.labels)
+dat.with.factor.scores = get_factor_scores(dat.research.norm.transform, mycor, length(factor.labels), factor.labels)
 
 factorcor = calc.correlations(dat.with.factor.scores[, factor.labels.plus], "pairwise.complete.obs", "pearson")
-heatmap(factorcor)
+
+plot_factor_heatmap(factorcor, factor.labels.plus, "img/heatmap_factors_nodend.png", dend="none")
+plot_factor_heatmap(factorcor, factor.labels.plus, "img/heatmap_factors_dend.png", dend="both")
+
 
 
 ######### predict citations
 
+png("img/cluster_by_citation.png")
+plot(with(dat.for.tree, table(cut(wosCountThru2011, quantile(wosCountThru2011)), cluster)))
+dev.off()
+
+
+
+
+NUMBER.CLUSTERS = 5
+set.seed(42)
+for (i in seq(1:1)){
+    #in_test_set = rbinom(dim(dat.for.cluster)[1], 1, prob=.5)
+    dat.for.cluster.training = subset(dat.for.cluster, format(pubDate, "%Y")=="2009", clusterColumns)
+    cluster_fit_training = cluster_assignments(dat.for.cluster.training, NUMBER.CLUSTERS)
+    t(round(cluster_fit_training$centers, 1))
+    dat_with_cluster_assignments.training <- data.frame(dat.for.cluster.training, cluster=factor(cluster_fit_training$cluster))
+    plot_cluster_centers(cluster_fit_training)
+    print(cluster_fit_training$tot.withinss)
+}
+
+
+rbind(t(round(cluster_fit_training$centers, 1)), percent=round(cluster_fit_training$size/sum(cluster_fit_training$size), 2))
+cluster_fit_training$size
+
+round(prop.table(table(dat_with_cluster_assignments$cluster, format(dat_with_cluster_assignments$pubDate, "%Y")), 2), 2)
+round(prop.table(table(dat_with_cluster_assignments$cluster, cut(dat_with_cluster_assignments$authorsCount, c(9, 2, 5, 10, 200))), 2), 2)
+
+
+
+
+
 library(party)
+library(RWeka)
+
+nr <- NROW(Cassini$x)
+ind <- sample(nr, 0.9 * nr, replace = FALSE)
+party <- kmeans(Cassini$x[ind, ], 3)
+table(cl_predict(party, Cassini$x[-ind, ]),
+      Cassini$classes[-ind])
+      
+dat.for.tree = merge(dat.research, dat_with_cluster_assignments[,c("doi", "cluster")], by="doi")
 
 predictionColumns = c("htmlDownloadsCount","mendeleyReadersCount","wosCountThru2011", "f1000Factor","wikipediaCites", "facebookShareCount", "deliciousCount", "almBlogsCount", "backtweetsCount")
+library(randomForest)
+fit <- randomForest(wosCountThru2011 ~ ., data=subset(dat.for.tree, format(pubDate, "%Y")=="2010", predictionColumns))
+print(fit)
+
+fit <- randomForest(cluster ~ ., data=subset(dat.for.tree, format(pubDate, "%Y")=="2010", append(predictionColumns, "cluster")))
+fit
+
 #fit <- ctree(wosCountThru2011 ~ ., data=subset(dat.research, format(pubDate, "%Y")=="2009", predictionColumns))
 #plot(fit, main="Conditional Inference Tree for wosCountThru2011")
 
-fit <- JRip(cluster ~ ., data=subset(dat_for_tree, format(pubDate, "%Y")=="2010", append(predictionColumns, "cluster")), control = Weka_control(R = TRUE, N=50))
+fit <- JRip(cluster ~ ., data=subset(dat.for.tree, format(pubDate, "%Y")=="2010", append(predictionColumns, "cluster")), control = Weka_control(R = TRUE, N=50))
 fit
 evaluate_Weka_classifier(fit)
 
 predictionColumnsNoCitation = c("htmlDownloadsCount","mendeleyReadersCount","f1000Factor","wikipediaCites", "facebookShareCount", "deliciousCount", "almBlogsCount", "backtweetsCount")
-fit <- JRip(cluster ~ ., data=subset(dat_for_tree, format(pubDate, "%Y")=="2010", append(predictionColumnsNoCitation, "cluster")), control = Weka_control(R = TRUE, N=50))
+fit <- JRip(cluster ~ ., data=subset(dat.for.tree, format(pubDate, "%Y")=="2010", append(predictionColumnsNoCitation, "cluster")), control = Weka_control(R = TRUE, N=50))
 fit
 evaluate_Weka_classifier(fit)
 
 
-fit <- JRip(cut(wosCountThru2011, c(0, 10, 1000)) ~ ., data=subset(dat_for_tree, format(pubDate, "%Y")=="2009", predictionColumns), control = Weka_control(R = TRUE, N=100)); e = evaluate_Weka_classifier(fit); fit; e
+fit <- JRip(cut(wosCountThru2011, c(0, 10, 1000)) ~ ., data=subset(dat.for.tree, format(pubDate, "%Y")=="2009", predictionColumns), control = Weka_control(R = TRUE, N=100)); e = evaluate_Weka_classifier(fit); fit; e
 chisq.test(e$confusionMatrix)
 
-fit_htmlonly <- JRip(cut(wosCountThru2011, c(0, 10, 1000)) ~ ., data=subset(dat_for_tree, format(pubDate, "%Y")=="2009", c("wosCountThru2011", "htmlDownloadsCount")), control = Weka_control(R = TRUE, N=100)); e_htmlonly = evaluate_Weka_classifier(fit); fit_htmlonly; e_htmlonly
+fit_htmlonly <- JRip(cut(wosCountThru2011, c(0, 10, 1000)) ~ ., data=subset(dat.for.tree, format(pubDate, "%Y")=="2009", c("wosCountThru2011", "htmlDownloadsCount")), control = Weka_control(R = TRUE, N=100)); e_htmlonly = evaluate_Weka_classifier(fit_htmlonly); fit_htmlonly; e_htmlonly
+
+predictionColumnsAltOnly = c("mendeleyReadersCount","f1000Factor","wikipediaCites", "facebookShareCount", "deliciousCount", "almBlogsCount", "backtweetsCount")
+fit_alt <- JRip(cut(wosCountThru2011, c(0, 10, 1000)) ~ ., data=subset(dat.for.tree, format(pubDate, "%Y")=="2009", append(predictionColumnsAltOnly, "wosCountThru2011")), control = Weka_control(R = TRUE, N=100)); e_alt = evaluate_Weka_classifier(fit_alt); fit_alt; e_alt
+chisq.test(e_alt$confusionMatrix)
+
 
 chisq.test(matrix(c(3194, 976, 3096, 1074), ncol = 2))
+
+
+ a = colwise(function(x) ifelse(x > quantile(x, na.rm=T)[4], 1, 0), altmetricsColumns)
+ #b = a(dat.research.norm.transform)
+ dat = subset(dat.research, journal=="pone")
+ dat = subset(dat, format(pubDate, "%Y")=="2010")
+ b = a(dat)
+ summary(b)
+ 
+ for (col in altmetricsColumns) {
+     cat("\n\n", col)
+     tt = table(b[,"wosCountThru2011"], b[,col])
+     pt = prop.table(tt, 1)
+     #print(pt)
+     ft = fisher.test(tt)
+     cat("\n", round(ft$estimate, 1), "[", round(ft$conf.int[1:2],1), "]", " p-value: ", round(ft$p.value, 3))
+     #print(table(b[,"wosCountThru2011"], b[,col])) 
+ }
 
 }

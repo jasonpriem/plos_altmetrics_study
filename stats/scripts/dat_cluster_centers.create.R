@@ -13,35 +13,40 @@ library(altmetrics.analysis)
 
 ### @export "factor analysis graphs"
 
-make_graphs = function(fa.results, factor.labels) {
+plot_factor_analysis = function(fa.results, factor.labels) {
     #quartz()
+    if (length(factor.labels) > 1) {
+        colnames(fa.results$loadings) = factor.labels
+    }
+    
     png(paste("img/factor_analysis_diagram.png", sep=""), width=500, height=500)
     fa.diagram(fa.results)
     dev.off()
+}
 
-    factors.cor = fa.results$score.cor
-    colorRange = round(range(factors.cor) * 15) + 16
+plot_factor_heatmap = function(mycor, factor.labels, filename, dend="none") {
+
+    colorRange = round(range(mycor) * 15) + 16
     colorChoices = bluered(32)[colorRange[1]:colorRange[2]]
 
     #quartz()
-    png(paste("img/heatmap_factors_nodend.png", sep=""), width=500, height=500)
-    heatmap.2(factors.cor, col=colorChoices, cexRow=1.5, cexCol = 1.5, symm = TRUE, 
+    if (dend=="both") {
+        Colv=T
+        Rowv=T
+    } else {
+        Colv=F
+        Rowv=F
+    }
+    png(paste(filename, sep=""), width=500, height=500)
+    heatmap.2(mycor, col=colorChoices, cexRow=1.5, cexCol = 1.5, symm = TRUE, 
     	labRow=factor.labels, labCol=factor.labels,
-    	dend = "none", Colv=F, Rowv=F,
+    	dend = dend, Colv=Colv, Rowv=Rowv,
     	lmat=rbind( c(0, 3), c(2,1), c(0,4) ), lhei=c(1.5, 4, 2 ),
     	trace = "none", margins=c(10,10), key=FALSE, keysize=0.1)
     dev.off()
+}
 
-    #quartz()
-    png(paste("img/heatmap_factors_dend.png", sep=""), width=500, height=500)
-    heatmap.2(factors.cor, col=colorChoices, cexRow=1.5, cexCol = 1.5, symm = TRUE, 
-    	labRow=factor.labels, labCol=factor.labels,
-    	dend = "both", Colv=T, Rowv=T,
-    	lmat=rbind( c(0, 3), c(2,1), c(0,4) ), lhei=c(1.5, 4, 2 ),
-    	trace = "none", margins=c(10,10), key=FALSE, keysize=0.1)
-    dev.off()	
-
-
+old_function = function() {
     # More confusing than helpful
     ## also see factor.plot
     #quartz()
@@ -74,6 +79,7 @@ heatmap_of_articles_factors = function(dat, cols, filename, year=2008) {
     dat.subsample = as.matrix(dat.tosample[sample(1:dim(dat.tosample)[1], 1000, TRUE), ])
     m=200
     png(filename, width=500, height=500)
+    
     heatmap.2(t(dat.subsample), col=bluered(m*2)[1:(m*2-1)], 
      	cexRow=1, cexCol=.1, dend = "both", trace="none", 
      	lmat=rbind( c(0, 3), c(2,1), c(0,4) ), lhei=c(1.5, 4, 2 ),
@@ -125,7 +131,11 @@ plot_cluster_centers = function(cluster_fit){
   #quartz()
   #cluster_labels = paste(colnames(t(cluster_fit$centers)), " (", table(cluster_fit$cluster), ")", sep="")       
   cluster_labels = paste("cluster ", colnames(t(cluster_fit$centers)), " (", round(100*cluster_fit$size/sum(cluster_fit$size), 0), "%)", sep="")       
-  heatmap.2(t(cluster_fit$centers), col=bluered(m*2)[1:(m*2-1)], 
+  
+  colorRange = round(range(cluster_fit$centers) * 15) + 16
+  colorChoices = bluered(32)[colorRange[1]:colorRange[2]]
+
+  heatmap.2(t(cluster_fit$centers), col=colorChoices, 
      	cexRow=1, cexCol=1, dend = "none", trace="none", 
      	labCol = cluster_labels,
      	lmat=rbind( c(0, 3), c(2,1), c(0,4) ), lhei=c(1.5, 4, 2 ),

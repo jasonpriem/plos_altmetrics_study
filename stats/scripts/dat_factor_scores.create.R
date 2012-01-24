@@ -1,6 +1,4 @@
 
-
-
 na.mult = function(x, y) {
     X = x
     Y = y
@@ -110,6 +108,7 @@ get_factor_scores = function
     )
 {
     ##details<< Do the factor analysis
+    set.seed(42)
     fa.results = do_factor_analysis(dat, mycor, num.factors, factor.labels)
     
     ##details<< Calculate scores for each of the factors for each article
@@ -128,7 +127,7 @@ get_factor_scores = function
     #rownames(subsample) = factor.labels
 
     #library(gplots)
-    #png(paste("../artifacts/factor_scores_heatmap.png", sep=""))
+    #png(paste("img/factor_scores_heatmap.png", sep=""))
     #heatmap.2(subsample, cexRow=0.9, cexCol = .9, symm = F, 
     #	dend = "both", Colv=T, Rowv=T,
     #	lmat=rbind( c(0, 3), c(2,1), c(0,4) ), lhei=c(1.5, 4, 2 ),
