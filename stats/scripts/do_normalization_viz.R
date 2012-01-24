@@ -1,4 +1,3 @@
-library(altmetrics.analysis)
 
 ### @export "visualization helpers"
 
@@ -43,7 +42,7 @@ plot_all_backgrounds_separately = function(dat, dat.backgrounds, column.names.to
     	i = i+1
     	inJournal = which(dat$journal==journal)
     	#quartz()
-    	png(paste("mean_over_time_figure", i, ".png", sep=""), width=800, height=800)
+    	png(paste("img/mean_over_time_figure", i, ".png", sep=""), width=800, height=800)
     	plot_background(dat[inJournal, ], dat.backgrounds[[journal]], column.names.to.normalize, title=journal, yrange, colour=rainbow(length(journals))[i])
     	dev.off()
     }
@@ -54,7 +53,7 @@ plot_all_backgrounds_overlay = function(dat, dat.backgrounds, column.names.to.no
     journals = names(dat.backgrounds)
     yrange = get_ranges(dat, column.names.to.normalize)
 
-    png(paste("mean_over_time_all.png", sep=""), width=800, height=800)
+    png(paste("img/mean_over_time_all.png", sep=""), width=800, height=800)
     #quartz()
     par(mfrow = c(ceiling(length(column.names.to.normalize)/4), 4), oma=c(2,2,4,2), mar=c(2, 1, 1, 1))
     cols = column.names.to.normalize
@@ -89,7 +88,7 @@ view_distributions = function(dat, dat.norm, column.names.to.normalize) {
     for (col in column.names.to.normalize) {
     	i = i+1
     	#quartz()
-    	filename = paste("altmetrics_distribution_", i, ".png", sep="")
+    	filename = paste("img/altmetrics_distribution_", i, ".png", sep="")
     	png(filename, width=600, height=600)
     	par(mfrow = c(3, 1))
     	titletext = paste(col, "\nNOT normalized", sep="")
@@ -102,7 +101,7 @@ view_distributions = function(dat, dat.norm, column.names.to.normalize) {
 
 view_distributions_overlay = function(dat, dat.norm, column.names.to.normalize) {
     #quartz()
-	png("altmetrics_distributions.png", width=600, height=600)
+	png("img/altmetrics_distributions.png", width=600, height=600)
     
     par(mfrow = c(ceiling(length(column.names.to.normalize)/4), 4), oma=c(2,2,4,2), mar=c(2, 1, 1, 1))
     
