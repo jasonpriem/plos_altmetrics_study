@@ -16,7 +16,9 @@ clean_crawler_counts <- function
     dat.eventcounts$pubDate  = strptime(dat.eventcounts$pubDate, "%Y-%m-%dT")
     min(dat.eventcounts$pubDate)
     max(dat.eventcounts$pubDate)
-    table(format(dat.eventcounts$pubDate, "%Y"))
+    # Create a convenience variable for year
+    dat.eventcounts$year = format(dat.eventcounts$pubDate, "%Y")
+    table(dat.eventcounts$year)
     
     ##details<< Create a column to store days since published, relative to most recent paper in the set
     dat.eventcounts$daysSincePublished = as.integer(difftime(max(dat.eventcounts$pubDate), dat.eventcounts$pubDate, units="days"))
@@ -137,6 +139,9 @@ get_dat_research = function() {
     dat.merged = dat.merged.2010.2011
 
     dat.research = research_articles_only(dat.merged)
+    #finally, sort it by  pubDate
+    dat.research = dat.research[order(dat.research$pubDate),]
+    
     dim(dat.research)
     save(dat.research, file = "../data/derived/dat_research.RData", compress="gzip")
     return(dat.research)

@@ -1,8 +1,15 @@
 options(width=250)
-setwd("/home/jason/projects/Plos altmetrics study")
-d<-read.table("./datasets/event_trends.txt", header=T, sep="\t")
+#setwd("/home/jason/projects/Plos altmetrics study")
 
-d <- d[,names(d) %in% c("qtr","journal", "articles.published", "articles.with.native.comments", "total.native.comments")]
+#PATH_TO_RAW_DATA = "./datasets/"
+PATH_TO_RAW_DATA = "../data/raw/"
+#PATH_TO_DERIVED_DATA = "./datasets/"
+PATH_TO_DERIVED_DATA = "../data/derived/"
+
+# load raw_events.txt
+d.all <-read.csv(paste(PATH_TO_DERIVED_DATA, "event_trends.txt", sep=""), sep="\t")
+
+d <- d.all[,names(d.all) %in% c("qtr","journal", "articles.published", "articles.with.native.comments", "total.native.comments")]
 
 # remove NAs
 d.hasna <- d

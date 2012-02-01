@@ -188,17 +188,17 @@ get_ranges = function(dat, column.names.to.normalize) {
 }
 
 plot_background = function(dat.input, dat.background, cols, title, yrange, colour) {
-    dat.input$pubDateVal = strptime(dat.input$pubDate, "%Y-%m-%d")
-    dat.input$pubDateVal = as.POSIXct(dat.input$pubDateVal)
-    xrange = range(dat.input$pubDateVal)
+    #dat.input$pubDateVal = strptime(dat.input$pubDate, "%Y-%m-%d")
+    #dat.input$pubDateVal = as.POSIXct(dat.input$pubDateVal)
+    xrange = range(dat.input$pubDate)
     
 	par(mfrow = c(ceiling(length(cols)/4), 4), oma=c(2,2,4,2), mar=c(2, 1, 1, 1))
 	for (col in cols) {
 		#print(col)
 		allrange = c(yrange$rangea[which(yrange$column==col)], yrange$rangeb[which(yrange$column==col)])
 		plot(xrange, allrange, type="n", main=col)
-		points(dat.input$pubDateVal, dat.input[,col], main=col, col="black", pch=20, cex=.5)	
-		points(dat.input$pubDateVal, dat.background[,col], col=colour, lwd=3, main=col)
+		points(dat.input$pubDate, dat.input[,col], main=col, col="black", pch=20, cex=.5)	
+		points(dat.input$pubDate, dat.background[,col], col=colour, lwd=3, main=col)
 	}
 	title(paste("Trends over time ", title), outer=TRUE)	
 }
@@ -231,10 +231,10 @@ plot_all_backgrounds_overlay = function(dat, dat.backgrounds, column.names.to.no
     #quartz()
     par(mfrow = c(ceiling(length(column.names.to.normalize)/4), 4), oma=c(2,2,4,2), mar=c(2, 1, 1, 1))
     cols = column.names.to.normalize
-    dat$pubDateVal = strptime(dat$pubDate, "%Y-%m-%d")
-    dat$pubDateVal = as.POSIXct(dat$pubDateVal)
+    #dat$pubDateVal = strptime(dat$pubDate, "%Y-%m-%d")
+    #dat$pubDateVal = as.POSIXct(dat$pubDateVal)
 
-    xrange = range(dat$pubDateVal)
+    xrange = range(dat$pubDate)
     for (col in cols) {
     	i=0
     	allrange = c(yrange$rangea[which(yrange$column==col)], yrange$rangeb[which(yrange$column==col)])
@@ -245,7 +245,7 @@ plot_all_backgrounds_overlay = function(dat, dat.backgrounds, column.names.to.no
     		inJournal = which(dat$journal==journal)
     		journal.background = dat.backgrounds[[journal]]
     		#quartz()		
-    		lines(dat[inJournal, "pubDateVal"], journal.background[,col], col=rainbow(length(journals))[i], lwd=3)
+    		lines(dat[inJournal, "pubDate"], journal.background[,col], col=rainbow(length(journals))[i], lwd=3)
     	}
     }
     #plot(1)
@@ -317,28 +317,6 @@ do_norm_viz = function() {
 }
 
 get_dat_research_norm = function() {
-    altmetricsColumns = c( "wosCountThru2010", "wosCountThru2011",
-    "almScopusCount",
-    "almPubMedCentralCount",
-    "almCrossRefCount",
-    "pdfDownloadsCount",        
-    "htmlDownloadsCount",    
-    "mendeleyReadersCount",     
-    "almCiteULikeCount",        
-    "plosCommentCount",         
-    "plosCommentResponsesCount",
-    "deliciousCount",
-    "almBlogsCount",            
-    "facebookCommentCount",          
-    "facebookLikeCount",          
-    "facebookShareCount",          
-    "facebookClickCount",          
-    "f1000Factor",              
-    "wikipediaCites",           
-    "backtweetsCount")
-
-    WINDOW_WIDTH_IN_DAYS = 365
-
     dat.backgrounds = backgrounds_for_each_journal(dat.research, altmetricsColumns, WINDOW_WIDTH_IN_DAYS)
     save(dat.backgrounds, file = "../data/derived/dat_backgrounds.RData", compress="gzip")
     plot_all_backgrounds_separately(dat.research, dat.backgrounds, altmetricsColumns)
@@ -350,12 +328,37 @@ get_dat_research_norm = function() {
     ##details<< Do transformation
     transformation_function = function(x) {log(1+x)}  
     dat.research.norm.transform = dat.research.norm
-    dat.research.norm.transform[, altmetricsColumns] = transformation_function(dat.research.norm[, altmetricsColumns])
+    # but don't transform f1000 because it is a score not a count
+    "%without%" <- function(x, y) x[!x %in% y] #--  x without y
+    transformColumns = altmetricsColumns %without% "f1000Factor"
+    dat.research.norm.transform[, transformColumns] = transformation_function(dat.research.norm[, transformColumns])
     save(dat.research.norm.transform, file = "../data/derived/dat_research_norm_transform.RData", compress="gzip")
     return(list(dat.backgrounds=dat.backgrounds, 
                 dat.research.norm=dat.research.norm, 
                 dat.research.norm.transform=dat.research.norm.transform))
 }
+
+altmetricsColumns = c( "wosCountThru2010", "wosCountThru2011",
+"almScopusCount",
+"almPubMedCentralCount",
+"almCrossRefCount",
+"pdfDownloadsCount",        
+"htmlDownloadsCount",    
+"mendeleyReadersCount",     
+"almCiteULikeCount",        
+"plosCommentCount",         
+"plosCommentResponsesCount",
+"deliciousCount",
+"almBlogsCount",            
+"facebookCommentCount",          
+"facebookLikeCount",          
+"facebookShareCount",          
+"facebookClickCount",          
+"f1000Factor",              
+"wikipediaCites",           
+"backtweetsCount")
+
+WINDOW_WIDTH_IN_DAYS = 365
 
 response = get_dat_research_norm()
 dat.backgrounds = response$dat.backgrounds

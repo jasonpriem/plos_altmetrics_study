@@ -298,7 +298,7 @@ rbind(t(round(cluster_fit_training$centers, 1)), percent=round(cluster_fit_train
 cluster_fit_training$size
 
 round(prop.table(table(dat_with_cluster_assignments$cluster, format(dat_with_cluster_assignments$pubDate, "%Y")), 2), 2)
-round(prop.table(table(dat_with_cluster_assignments$cluster, cut(dat_with_cluster_assignments$authorsCount, c(9, 2, 5, 10, 200))), 2), 2)
+round(prop.table(table(dat_with_cluster_assignments$cluster, cut(dat_with_cluster_assignments$authorsCount, c(0, 2, 5, 10, 200))), 2), 2)
 
 
 
@@ -306,12 +306,6 @@ round(prop.table(table(dat_with_cluster_assignments$cluster, cut(dat_with_cluste
 
 library(party)
 library(RWeka)
-
-nr <- NROW(Cassini$x)
-ind <- sample(nr, 0.9 * nr, replace = FALSE)
-party <- kmeans(Cassini$x[ind, ], 3)
-table(cl_predict(party, Cassini$x[-ind, ]),
-      Cassini$classes[-ind])
       
 dat.for.tree = merge(dat.research, dat_with_cluster_assignments[,c("doi", "cluster")], by="doi")
 
@@ -349,21 +343,36 @@ chisq.test(e_alt$confusionMatrix)
 chisq.test(matrix(c(3194, 976, 3096, 1074), ncol = 2))
 
 
- a = colwise(function(x) ifelse(x > quantile(x, na.rm=T)[4], 1, 0), altmetricsColumns)
- #b = a(dat.research.norm.transform)
- dat = subset(dat.research, journal=="pone")
- dat = subset(dat, format(pubDate, "%Y")=="2010")
- b = a(dat)
- summary(b)
- 
- for (col in altmetricsColumns) {
-     cat("\n\n", col)
-     tt = table(b[,"wosCountThru2011"], b[,col])
-     pt = prop.table(tt, 1)
-     #print(pt)
-     ft = fisher.test(tt)
-     cat("\n", round(ft$estimate, 1), "[", round(ft$conf.int[1:2],1), "]", " p-value: ", round(ft$p.value, 3))
-     #print(table(b[,"wosCountThru2011"], b[,col])) 
- }
+library(plyr)
+source("utils.R")
+
+split_upperquartile = colwise(function(x) ifelse(x > quantile(x, na.rm=T)[4], 1, 0), altmetricsColumns)
+#b = a(dat.research.norm.transform)
+
+b = c()
+for (myjournal in c("pone", "ppat", "pbio")) {
+    cat("\n", myjournal)
+    dat_journal2010 = subset(dat.research, journal==myjournal)
+    dat_journal2010 = subset(dat_journal2010, year=="2010")
+    dat_journal2010_upperquartile = split_upperquartile(dat_journal2010)
+    summary(dat_journal2010_upperquartile)
+
+    for (col in altmetricsColumns) {
+         cat("\n\n", col)
+         table_quartile = table(dat_journal2010_upperquartile[,"wosCountThru2011"], dat_journal2010_upperquartile[,col])
+         prop_table_quartile = prop.table(table_quartile, 1)
+         #print(pt)
+         if (dim(table_quartile)[2] > 1) {
+             fisher_test_quartile = fisher.test(table_quartile)
+             cat("\n", round(fisher_test_quartile$estimate, 1), " [", round(fisher_test_quartile$conf.int[1:2],1), "]", " p-value: ", round(fisher_test_quartile$p.value, 3), sep=" ")
+         }
+         #print(table(b[,"wosCountThru2011"], b[,col])) 
+    }
+    
+    mycor = calc.correlations(dat_journal2010[, altmetricsColumns], "pairwise.complete.obs", "pearson")
+    a = mycor[,"wosCountThru2011"]
+    b = cbind(a, b)
+    colnames(b)[1] = myjournal
+}
 
 }

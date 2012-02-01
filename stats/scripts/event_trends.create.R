@@ -10,12 +10,16 @@
 
 # housekeeping
 options(width=250)
-setwd("/home/jason/projects/Plos altmetrics study")
+#setwd("/home/jason/projects/Plos altmetrics study")
+#PATH_TO_RAW_DATA = "./datasets/"
+#PATH_TO_DERIVED_DATA = "./datasets/"
+PATH_TO_RAW_DATA = "../data/raw/"
+PATH_TO_DERIVED_DATA = "../data/derived/"
 library(zoo)
 
 # load data
-eve <-read.csv("./datasets/raw_events.txt", sep="\t")
-art <-read.csv("./datasets/raw_event_counts.txt", sep="\t")
+eve <-read.csv(paste(PATH_TO_RAW_DATA, "raw_events.txt.gz", sep=""), sep="\t")
+art <-read.csv(paste(PATH_TO_RAW_DATA, "raw_event_counts.txt.gz", sep=""), sep="\t")
 art <- art[order(art$doi),] #sort by doi
 
 # restrict events to those on research articles
@@ -89,7 +93,8 @@ get.quarterly.counts.restricted.by.latency <- function(events, articles, eventTy
 }
 
 # set params
-window.latency = 7776000 # 90 days
+window.latency = 90*24*60*60 # 90 days
+#window.latency = 7*24*60*60 
 events.byqtr<-NULL # for use in testing
 
 # Add each event type to the big return table
@@ -105,7 +110,7 @@ for (eventType in eventTypes[2:length(eventTypes)]) {
 events.byqtr$qtr<-as.numeric(as.yearqtr(events.byqtr$qtr))
 
 # save output
-write.table(events.byqtr, "./datasets/event_trends.txt", sep="\t", row.names=FALSE, quote=FALSE)
+write.table(events.byqtr, paste(PATH_TO_DERIVED_DATA, "event_trends.txt", sep=""), sep="\t", row.names=FALSE, quote=FALSE)
 
 
 
