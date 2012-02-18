@@ -25,7 +25,8 @@ plot_heatmap = function (mycor, main, dend="none", Colv=F, withlabels=F) {
 
 save_correlation_heatmap = function(dat, journal, year, dend="none", withlabels=F, main=""){
 		mycor = calc.correlations(dat, "pairwise.complete.obs", "pearson")
-	    pdf(paste("img/heatmap_altmetrics_", journal, year, main, ".pdf", sep=""), width=200, height=200)
+	    #pdf(paste("img/heatmap_altmetrics_", journal, year, main, ".pdf", sep=""), width=200, height=200)
+	    png(paste("img/heatmap_altmetrics_", journal, year, main, ".png", sep=""), width=600, height=600)
 	    plot_heatmap(mycor, "", dend=dend, withlabels=withlabels)
 		title(paste("\n", main, year, journal))
 	    dev.off()    
@@ -65,7 +66,7 @@ heatmap_of_articles = function(dat, corrColumns, year=2008) {
     dat.tosample = dat[inYear,]
     dat.subsample = as.matrix(dat.tosample[sample(1:dim(dat.tosample)[1], 1000, TRUE), corrColumns])
     m=200
-    pdf(paste("img/heatmap_articles_vs_altmetrics_", year, ".pdf", sep=""))
+    pdf(paste("img/heatmap_articles_vs_altmetrics_", year, ".pdf", sep=""), width=200, height=200)
     heatmap.2(t(dat.subsample), col=bluered(m*2)[1:(m*2-1)], 
      	cexRow=1, cexCol=.1, dend = "both", trace="none", 
      	lmat=rbind( c(0, 3), c(2,1), c(0,4) ), lhei=c(1.5, 4, 2 ),
@@ -82,16 +83,18 @@ showpanel <- function(column) {
 #showpanel(bluered(m*2)[1:(m*2-1)])
 
 
-mycor = calc.correlations(dat.research.norm.transform[, altmetricsColumns], "pairwise.complete.obs", "pearson")
+run = function() {
+    mycor = calc.correlations(dat.research.norm.transform[, altmetricsColumns], "pairwise.complete.obs", "pearson")
 
-# main one, with labels
-save_correlation_heatmap(dat.research.norm.transform[, altmetricsColumns], "all", "all", dend="none", withlabels=T, main="labels")
+    # main one, with labels
+    save_correlation_heatmap(dat.research.norm.transform[, altmetricsColumns], "all", "all", dend="none", withlabels=T, main="labels")
 
-# subdivisions
-lots_of_correlations(dat.research.norm.transform, altmetricsColumns)
+    # subdivisions
+    lots_of_correlations(dat.research.norm.transform, altmetricsColumns)
 
-# now with dendrograms
-save_correlation_heatmap(dat.research.norm.transform[, altmetricsColumns], "all", "all", dend="both", withlabels=T, main="dend")
+    # now with dendrograms
+    save_correlation_heatmap(dat.research.norm.transform[, altmetricsColumns], "all", "all", dend="both", withlabels=T, main="dend")
 
-heatmap_of_articles(dat.research.norm.transform, altmetricsColumns)
+    heatmap_of_articles(dat.research.norm.transform, altmetricsColumns)
 
+}

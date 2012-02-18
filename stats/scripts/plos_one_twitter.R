@@ -12,7 +12,8 @@ d <-read.csv(paste(PATH_TO_RAW_DATA, "raw_events.txt.gz", sep=""), sep="\t")
 d$pubDate  = strptime(d$date, "%Y-%m-%dT")
 
 # get the tweets
-bt <- d[d$eventType=="backtweets",]
+#bt <- d[d$eventType=="backtweets",]
+bt = subset(d, eventType %in% c("citeulike","delicious", "backtweets"))
 
 # column for which journal
 bt$journal <- substr(bt$doi, 17, 20)

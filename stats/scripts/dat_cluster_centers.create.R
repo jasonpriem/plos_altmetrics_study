@@ -137,7 +137,7 @@ plot_cluster_centers = function(cluster_fit, prettyColumnNames){
   #colorChoices = bluered(32)[colorRange[1]:colorRange[2]]
   colorChoices = rgb((0:64)/64, green=0, blue=0)
 
-  heatmap.2(t(cluster_fit$centers[order(cluster_fit$size),]), col=colorChoices, 
+  heatmap.2(t(min(cluster_fit$centers) + cluster_fit$centers[order(cluster_fit$size),]), col=colorChoices, 
      	cexRow=2, cexCol=2, dend = "none", trace="none", 
      	labCol = cluster_labels[order(cluster_fit$size)],
      	labRow = metric_labels,

@@ -148,4 +148,4 @@ get_dat_research = function() {
 }
 
 setwd("~/Documents/Projects/PLoSimpact/new/plos_altmetrics_study/stats/scripts")
-dat.research = get_dat_research()
+#dat.research = get_dat_research()
