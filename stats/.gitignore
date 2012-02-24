@@ -1,6 +1,5 @@
-artifacts/
-cache/
-data/
-filters/
-logs/
-times.csv
+data/*/*.gz
+data/*/*.zip
+data/*/*.RData
+data/*/*.txt
+
