@@ -83,8 +83,8 @@ cat("Total papers with altmetrics data:", dim(dat_altmetrics_cleaned)[1])
 
 ##### TABLE ON PAPERS PER YEAR, JOURNAL
 tablePaperDist = addmargins(table(dat.research$year, dat.research$journal))
-print(xtable(rbind(plos_journals[colnames(tablePaperDist)], tablePaperDist), digits=0), type="html", html.table.attributes = "border = '0'", file=paste(PATH_TO_TABLES, "table1.html", sep=""))
-write.table(rbind(plos_journals[colnames(tablePaperDist)], round(tablePaperDist, 0)), paste(PATH_TO_TABLES, "table1.csv", sep=""), sep=",", col.names=FALSE)
+print(xtable(rbind(plos_journals[colnames(tablePaperDist)], tablePaperDist), digits=0), type="html", html.table.attributes = "border = '0'", file=paste(PATH_TO_TABLES, "table2.html", sep=""))
+write.table(rbind(plos_journals[colnames(tablePaperDist)], round(tablePaperDist, 0)), paste(PATH_TO_TABLES, "table2.csv", sep=""), sep=",", col.names=FALSE)
 
 ##### FIGURE ON PAPERS PER YEAR, JOURNAL
 
