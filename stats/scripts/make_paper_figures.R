@@ -1,12 +1,9 @@
 ####### GET SET UP
 
-#setwd("/home/jason/projects/Plos altmetrics study")
-#PATH_TO_RAW_DATA = "./datasets/"
-#PATH_TO_DERIVED_DATA = "./datasets/"
-
-setwd("~/Documents/Projects/PLoSimpact/new/plos_altmetrics_study/stats/scripts")
 PATH_TO_RAW_DATA = "../data/raw/"
 PATH_TO_DERIVED_DATA = "../data/derived/"
+PATH_TO_TABLES = "../results/tables/"
+PATH_TO_FIGURES = "../results/figures/"
 
 options(scipen=100)
 options(digits=2)
@@ -17,6 +14,26 @@ library(ggplot2)
 cbgRaw = c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 cbgFillPalette <- scale_fill_manual(values=cbgRaw)
 cbgColourPalette <- scale_colour_manual(values=cbgRaw)
+
+altmetricsColumns = c( "wosCountThru2010", "wosCountThru2011",
+"almScopusCount",
+"almPubMedCentralCount",
+"almCrossRefCount",
+"pdfDownloadsCount",        
+"htmlDownloadsCount",    
+"mendeleyReadersCount",     
+"almCiteULikeCount",        
+"plosCommentCount",         
+"plosCommentResponsesCount",
+"deliciousCount",
+"almBlogsCount",            
+"facebookCommentCount",          
+"facebookLikeCount",          
+"facebookShareCount",          
+"facebookClickCount",          
+"f1000Factor",              
+"wikipediaCites",           
+"backtweetsCount")
 
 prettyAltmetricsColumns = data.frame(col=altmetricsColumns, pretty = c(
     "Web of Science cites thru 2010", 
@@ -40,6 +57,14 @@ prettyAltmetricsColumns = data.frame(col=altmetricsColumns, pretty = c(
     "Wikipedia cites", 
     "Twitter mentions"), stringsAsFactors=FALSE)
 
+plos_journals = c("PLoS ONE",
+    "PLoS Biology",
+    "PLoS Medicine",
+    "PLoS Genetics",
+    "PLoS Computational Biology",
+    "PLoS Pathogens",
+    "PLoS Neglected Tropical Diseases")
+names(plos_journals) = c("pone", "pbio", "pmed", "pgen", "pcbi", "ppat", "pntd")
 
 ####### GET DATA
 
@@ -57,7 +82,9 @@ dat_altmetrics_cleaned = clean_crawler_counts(dat_raw_event_counts)
 cat("Total papers with altmetrics data:", dim(dat_altmetrics_cleaned)[1])
 
 ##### TABLE ON PAPERS PER YEAR, JOURNAL
-addmargins(table(dat.research$year, dat.research$journal))
+tablePaperDist = addmargins(table(dat.research$year, dat.research$journal))
+print(xtable(rbind(plos_journals[colnames(tablePaperDist)], tablePaperDist), digits=0), type="html", html.table.attributes = "border = '0'", file=paste(PATH_TO_TABLES, "table1.html", sep=""))
+write.table(rbind(plos_journals[colnames(tablePaperDist)], round(tablePaperDist, 0)), paste(PATH_TO_TABLES, "table1.csv", sep=""), sep=",", col.names=FALSE)
 
 ##### FIGURE ON PAPERS PER YEAR, JOURNAL
 
@@ -102,7 +129,7 @@ print(summary(dat.nonzero.indicator.engaged$num_nonzero))
 
 print(cumsum(table(dat.nonzero.indicator.engaged$num_nonzero)))/length(dat.nonzero.indicator.engaged$num_nonzero)
 
-png("img/hist_research_nonzero_event_counts.png", width=500, height=500)
+png("img/figure1.png", width=500, height=500)
 ggplot(subset(dat.nonzero.indicator.engaged, num_nonzero>=2), aes(x=num_nonzero)) + geom_histogram(aes(y=..density..), alpha=0.5, binwidth=1, position="identity", breaks=1:14) + labs(x="Number of engaged sources", y="Proportion of papers") + theme_bw() + opts(title = "") + cbgFillPalette + cbgColourPalette
 #ggplot(subset(dat.nonzero.indicator.engaged, num_nonzero>0), aes(x=num_nonzero, fill=year)) + geom_density(aes(y=..density..), alpha=0.5, adjust=4) + labs(x="Number of engaged sources", y="Density") + theme_bw() + opts(title = "") + cbgFillPalette
 #ggplot(subset(dat.nonzero.indicator.engaged, num_nonzero>0), aes(x=num_nonzero)) + geom_freqpoly(aes(y=..density.., color=year), alpha=0.5, binwidth=1, position="identity") + labs(x="Number of engaged sources", y="Number of papers") + theme_bw() + opts(title = "") + cbgFillPalette + cbgColourPalette
