@@ -9,92 +9,42 @@ options(scipen=100)
 options(digits=2)
 options(width=50)
 
-#colourblind friendly palettes from http://wiki.stdout.org/rcookbook/Graphs/Colors%20(ggplot2)
-library(ggplot2)
-cbgRaw = c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-cbgFillPalette <- scale_fill_manual(values=cbgRaw)
-cbgColourPalette <- scale_colour_manual(values=cbgRaw)
+source("lookup_tables.R")
+source("utils.R")
 
-altmetricsColumns = c( "wosCountThru2010", "wosCountThru2011",
-"almScopusCount",
-"almPubMedCentralCount",
-"almCrossRefCount",
-"pdfDownloadsCount",        
-"htmlDownloadsCount",    
-"mendeleyReadersCount",     
-"almCiteULikeCount",        
-"plosCommentCount",         
-"plosCommentResponsesCount",
-"deliciousCount",
-"almBlogsCount",            
-"facebookCommentCount",          
-"facebookLikeCount",          
-"facebookShareCount",          
-"facebookClickCount",          
-"f1000Factor",              
-"wikipediaCites",           
-"backtweetsCount")
-
-prettyAltmetricsColumns = data.frame(col=altmetricsColumns, pretty = c(
-    "Web of Science cites thru 2010", 
-    "Web of Science cites thru 2011", 
-    "Scopus cites",
-    "PubMed Central cites",
-    "CrossRef cites",
-    "PDF downloads",
-    "HTML page views", 
-    "Mendeley bookmarks", 
-    "CiteULike bookmarks", 
-    "PLoS comments", 
-    "PLoS comment responses", 
-    "Delicious bookmarks", 
-    "Blog mentions", 
-    "Facebook comments", 
-    "Facebook likes",
-    "Facebook shares", 
-    "Facebook clicks",
-    "F1000 rating", 
-    "Wikipedia cites", 
-    "Twitter mentions"), stringsAsFactors=FALSE)
-
-plos_journals = c("PLoS ONE",
-    "PLoS Biology",
-    "PLoS Medicine",
-    "PLoS Genetics",
-    "PLoS Computational Biology",
-    "PLoS Pathogens",
-    "PLoS Neglected Tropical Diseases")
-names(plos_journals) = c("pone", "pbio", "pmed", "pgen", "pcbi", "ppat", "pntd")
-
-####### GET DATA
-
-load(paste(PATH_TO_DERIVED_DATA, "dat_research.RData", sep=""))
-load(paste(PATH_TO_DERIVED_DATA, "dat_research_norm_transform.RData", sep=""))
-d <-read.csv(paste(PATH_TO_RAW_DATA, "raw_events.txt.gz", sep=""), sep="\t")
-d$pubDate  = strptime(d$date, "%Y-%m-%dT")
 
 ########## How many papers total
 
-source("dat_research.create.R")
-dat_raw_event_counts = read.csv(paste(PATH_TO_RAW_DATA, "raw_event_counts.txt.gz", sep=""), header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
-dat_altmetrics_cleaned = clean_crawler_counts(dat_raw_event_counts)
+source("preprocessing_eventcounts_clean.R")
 
-cat("Total papers with altmetrics data:", dim(dat_altmetrics_cleaned)[1])
+raw_crawler_eventcounts = read.csv(paste(PATH_TO_RAW_DATA, "raw_crawler_eventcounts.txt.gz", sep=""), header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
+df_altmetrics_cleaned = clean_crawler_counts(raw_crawler_eventcounts)
 
-##### TABLE ON PAPERS PER YEAR, JOURNAL
-tablePaperDist = addmargins(table(dat.research$year, dat.research$journal))
-print(xtable(rbind(plos_journals[colnames(tablePaperDist)], tablePaperDist), digits=0), type="html", html.table.attributes = "border = '0'", file=paste(PATH_TO_TABLES, "table2.html", sep=""))
-write.table(rbind(plos_journals[colnames(tablePaperDist)], round(tablePaperDist, 0)), paste(PATH_TO_TABLES, "table2.csv", sep=""), sep=",", col.names=FALSE)
+cat("Total papers with altmetrics data:", dim(df_altmetrics_cleaned)[1])
 
-##### FIGURE ON PAPERS PER YEAR, JOURNAL
+##### TABLE 1: assembled manually
+#nothing
 
-png("img/stackedjournalhist.png", width=500, height=500)
-ggplot(dat.research, aes(x=year)) + stat_bin(aes(y=..count.., fill=journal)) + cbgFillPalette
-#ggplot(dat.research, aes(x=year)) + stat_bin(aes(y=..count.., fill=journal)) + scale_fill_brewer(palette="Set1")
+##### FIGURE 1:  Hamming window
+
+library(signal)
+window = hamming(WINDOW_WIDTH_IN_DAYS)
+png(PATH_TO_FIGURES & "figure1.png")
+days = seq(window)- length(window)/2
+plot(days, window)
 dev.off()
 
 
-######## FIGURE ON PROPORTION OF PAPERS WITH prettyAltmetricsColumns METRICS, BY METRIC
+##### TABLE 2:  Table on papers per year, per journal
+tablePaperDist = addmargins(table(dat.research$year, dat.research$journal))
+print(xtable(rbind(plos_journals[colnames(tablePaperDist)], tablePaperDist), digits=0), type="html", html.table.attributes = "border = '0'", file=PATH_TO_TABLES & "table2.html")
+write.table(rbind(plos_journals[colnames(tablePaperDist)], round(tablePaperDist, 0)), PATH_TO_TABLES & "table2.csv", sep=",", col.names=FALSE)
+
+# FIGURE ON PAPERS PER YEAR, JOURNAL
+#ggplot(dat.research, aes(x=year)) + stat_bin(aes(y=..count.., fill=journal)) + cbgFillPalette
+
+
+######## FIGURE 2: proportion of papers with prettyAltmetricsColumns metrics, by metric
 
 dat.nonzero.indicator = dat.research
 dat.nonzero.indicator[,altmetricsColumns][dat.nonzero.indicator[,altmetricsColumns] > 1] = 1
@@ -103,13 +53,12 @@ summary(dat.nonzero.indicator[,altmetricsColumns])
 nonzero.freq = apply(dat.nonzero.indicator[,altmetricsColumns], 2, mean, na.rm=T)
 nonzero.freq <- nonzero.freq[sort.list(nonzero.freq, decreasing = T)]
 
-prettyNames = prettyAltmetricsColumns$pretty[match(names(nonzero.freq),prettyAltmetricsColumns$col)]
+prettyNames = prettyAltmetricsColumns[names(nonzero.freq)]
 
 nonzero.df = data.frame(prettyNames=prettyNames, col=names(nonzero.freq), freq=nonzero.freq)
 nonzero.df$names <- factor(nonzero.df$prettyNames, levels=nonzero.df$prettyNames, ordered=T)
 
-
-png("img/nonzero_by_metric.png", width=500, height=500)
+png(PATH_TO_FIGURES & "figure2.png", width=500, height=500)
 ggplot(nonzero.df) + geom_bar(aes(names, freq)) + scale_y_continuous("", formatter="percent", breaks=c(0, .2, .4, .6, .8, 1)) + labs(x="") + coord_flip() + theme_bw() + opts(title = "") + cbgFillPalette
 dev.off()
 
@@ -120,7 +69,7 @@ nonzero.freq.plosone <- nonzero.freq.plosone[sort.list(nonzero.freq.plosone, dec
 
 print(nonzero.freq.plosone)
 
-######## FIGURE ON NUMBER OF NONZERO METRICS PER PAPER
+######## FIGURE 3: NUMBER OF NONZERO METRICS PER PAPER
 
 dat.nonzero.indicator.engaged = dat.nonzero.indicator
 dat.nonzero.indicator.engaged$num_nonzero = apply(subset(dat.nonzero.indicator[,altmetricsColumns], select= -c(wosCountThru2011, almScopusCount, almPubMedCentralCount, almCrossRefCount)), 1, sum, na.rm=T)
@@ -129,33 +78,145 @@ print(summary(dat.nonzero.indicator.engaged$num_nonzero))
 
 print(cumsum(table(dat.nonzero.indicator.engaged$num_nonzero)))/length(dat.nonzero.indicator.engaged$num_nonzero)
 
-png("img/figure1.png", width=500, height=500)
+png(PATH_TO_FIGURES & "figure3.png", width=500, height=500)
 ggplot(subset(dat.nonzero.indicator.engaged, num_nonzero>=2), aes(x=num_nonzero)) + geom_histogram(aes(y=..density..), alpha=0.5, binwidth=1, position="identity", breaks=1:14) + labs(x="Number of engaged sources", y="Proportion of papers") + theme_bw() + opts(title = "") + cbgFillPalette + cbgColourPalette
 #ggplot(subset(dat.nonzero.indicator.engaged, num_nonzero>0), aes(x=num_nonzero, fill=year)) + geom_density(aes(y=..density..), alpha=0.5, adjust=4) + labs(x="Number of engaged sources", y="Density") + theme_bw() + opts(title = "") + cbgFillPalette
 #ggplot(subset(dat.nonzero.indicator.engaged, num_nonzero>0), aes(x=num_nonzero)) + geom_freqpoly(aes(y=..density.., color=year), alpha=0.5, binwidth=1, position="identity") + labs(x="Number of engaged sources", y="Number of papers") + theme_bw() + opts(title = "") + cbgFillPalette + cbgColourPalette
 dev.off()
 
-######## FIGURE ON NUMBER OF NONZERO METRICS PER PAPER, BY YEAR
+######## NUMBER OF NONZERO METRICS PER PAPER, BY YEAR
+#hist.nonzero.by.year = table(dat.nonzero.indicator$year, apply(dat.nonzero.indicator[,altmetricsColumns], 1, sum, na.rm=T))
+#nonzero.by.year = melt(hist.nonzero.by.year)
+#names(nonzero.by.year) = c("year", "num_metrics", "histcount")
+#png("img/hist_research_nonzero_event_counts_by_year.png", width=500, height=500)
+#qplot(num_metrics, histcount, data=nonzero.by.year, geom="bar", stat="identity") + facet_grid(year ~ .) + cbgFillPalette
+#dev.off()
 
-hist.nonzero.by.year = table(dat.nonzero.indicator$year, apply(dat.nonzero.indicator[,altmetricsColumns], 1, sum, na.rm=T))
-nonzero.by.year = melt(hist.nonzero.by.year)
-names(nonzero.by.year) = c("year", "num_metrics", "histcount")
-png("img/hist_research_nonzero_event_counts_by_year.png", width=500, height=500)
-qplot(num_metrics, histcount, data=nonzero.by.year, geom="bar", stat="identity") + facet_grid(year ~ .) + cbgFillPalette
+
+######### NUMBER OF UNIQUE CREATORS PER METRIC, PER YEAR
+#dois_per_year = ddply(d, .(year=format(pubDate, "%Y")), summarise, numdois = length(unique(doi)))
+#creatorevents = subset(d, eventType %in% c("citeulike","delicious", "backtweets"))
+#unique_creators_per_year = ddply(creatorevents, .(eventType, year=format(pubDate, "%Y")), summarise, numcreators = length(unique(creator)))
+#proportion_unique_creators_per_year = merge(unique_creators_per_year, dois_per_year, by="year")
+#proportion_unique_creators_per_year$fraction = with(proportion_unique_creators_per_year, numcreators/numdois)
+
+#png(PATH_TO_FIGURES & "figure4.png", width=500, height=500)
+#ggplot(proportion_unique_creators_per_year, aes(x=year, y=fraction*1000, fill=factor(eventType))) + geom_bar() + opts(title="unique creators in each year, per 1000 papers") + cbgFillPalette
+#dev.off()
+
+########## FIGURE 5: EVENT CREATION BY CREATOR
+
+#load(paste(PATH_TO_DERIVED_DATA, "dat_research.RData", sep=""))
+#load(paste(PATH_TO_DERIVED_DATA, "dat_research_norm_transform.RData", sep=""))
+d <-read.csv(paste(PATH_TO_RAW_DATA, "raw_crawler_events.txt.gz", sep=""), sep="\t")
+d$pubDate  = strptime(d$date, "%Y-%m-%dT")
+
+
+art <-read.csv(paste(PATH_TO_RAW_DATA, "raw_event_counts.txt.gz", sep=""), sep="\t")
+
+# restrict events to those on research articles
+art.r <- art[art$articleType=="Research Article", ]
+d <- d[d$doi %in%  art.r$doi,]
+
+# column for which journal
+d$journal <- substr(d$doi, 17, 20)
+
+# get the events
+bt = subset(d, eventType %in% c("citeulike","delicious", "backtweets"))
+
+# frame for just Plos ONE, where we have much more data
+bt.pone <- bt[bt$journal == "pone",]
+bt.pone$doi <- factor(bt.pone$doi[1:nrow(bt.pone)]) #drop unused levels
+bt.pone$creator <- factor(bt.pone$creator[1:nrow(bt.pone)])
+
+# remove tweets with negative latency
+nrow(bt.pone[bt.pone$latency <= 0,]) / nrow(bt.pone) # 2%
+bt.pone = bt.pone[bt.pone$latency > 0,]
+
+# check out the distributions (as expected, mostly power-law)
+#creators <- ddply(bt.pone, .(creator, eventType), summarize, length(unique(creator)))
+
+creators.df = data.frame(creator=NULL, num_creations=NULL, eventType=NULL)
+for (eType in c("citeulike","delicious", "backtweets")) {
+    sub = subset(bt.pone, eventType==eType)
+    creators <- rev(sort(table(sub$creator)))
+    creators.df = rbind(creators.df, data.frame(creator=names(creators), num_creations=creators, eventType=eType))
+#plot(creators, log="xy")
+}
+
+png(PATH_TO_FIGURES & "figure5.png", width=600, height=300)
+ggplot(data=creators.df, aes(x=num_creations)) + geom_histogram(binwidth=0.35, position="identity") + scale_x_log10(formatter="comma", breaks=c(0, 1, 10, 100, 1000)) + scale_y_log10(formatter="comma", breaks=c(0, 1, 10, 100, 1000)) + labs(x="number of events", y="number of distinct event creators") + theme_bw() + cbgFillPalette + facet_grid(~ eventType)
 dev.off()
 
-######### FIGURE ON NUMBER OF UNIQUE CREATORS PER METRIC, PER YEAR
+############ FIGURE 6:   EVENTS OVER TIME, BY METRIC
 
-dois_per_year = ddply(d, .(year=format(pubDate, "%Y")), summarise, numdois = length(unique(doi)))
-creatorevents = subset(d, eventType %in% c("citeulike","delicious", "backtweets"))
-unique_creators_per_year = ddply(creatorevents, .(eventType, year=format(pubDate, "%Y")), summarise, numcreators = length(unique(creator)))
-proportion_unique_creators_per_year = merge(unique_creators_per_year, dois_per_year, by="year")
-proportion_unique_creators_per_year$fraction = with(proportion_unique_creators_per_year, numcreators/numdois)
+bt.pone <- d[bt$journal == "pone",]
 
-png("img/unique_creators_per_year.png", width=500, height=500)
-ggplot(proportion_unique_creators_per_year, aes(x=year, y=fraction*1000, fill=factor(eventType))) + geom_bar() + opts(title="unique creators in each year, per 1000 papers") + cbgFillPalette
+# remove tweets with negative latency
+nrow(bt.pone[bt.pone$latency <= 0,]) / nrow(bt.pone) 
+bt.pone = bt.pone[bt.pone$latency > 0,]
+bt.pone = bt.pone[bt.pone$latency < (60*60*24*365*5),]
+
+months.df = data.frame(month=NULL, num_events=NULL, eventType=NULL)
+for (eType in c("html views", "pdf views", "native comments", "citeulike", "backtweets", "delicious")) {
+    sub = subset(bt.pone, eventType==eType)
+    sub$latency_round = round(sub$latency/(60*60*24*7), 0)
+    sub = ddply(sub, .(latency_round), summarise, total=sum(count))
+    months.df = rbind(months.df, data.frame(month=sub$latency_round, num_events=sub$total, eventType=eType))
+    #plot(as.numeric(names(months)), months)
+#plot(creators, log="xy")
+}
+
+
+png(PATH_TO_FIGURES & "figure6.png", width=600, height=500)
+ggplot(data=months.df, aes(x=month, y=num_events, color=eventType)) + 
+    geom_point(aes(alpha=0.5)) + 
+    scale_y_log10(breaks=c(1, 10, 100, 1000, 10000, 100000), labels=c(1, 10, 100, 1000, 10000, 100000)) + 
+    scale_x_continuous(breaks=c((1:5)*52)) + 
+    labs(x="weeks since publication", y="total events each week") + 
+    theme_bw() + cbgColourPalette + cbgFillPalette + 
+    geom_smooth(span=0.3) + scale_alpha(legend = FALSE)
 dev.off()
 
+
+
+############  FIGURE 7:  events by latency
+
+source("do_normalization_viz.R")
+
+load(file = "../data/derived/dat_backgrounds.RData")
+
+journals = names(dat.background)
+dat = dat.research
+yrange = get_ranges(dat, altmetricsColumns)
+
+cols = altmetricsColumns
+dat$pubDateVal = strptime(dat$pubDate, "%Y-%m-%d")
+dat$pubDateVal = as.POSIXct(dat$pubDateVal)
+xrange = range(dat$pubDateVal)
+
+png(paste("img/mean_over_time_all.png", sep=""), width=800, height=800)
+
+#quartz()
+par(mfrow = c(ceiling(length(altmetricsColumns)/4), 4), oma=c(2,2,4,2), mar=c(3, 2, 1.5, 2))
+for (col in cols) {
+	i=0
+	allrange = c(yrange$rangea[which(yrange$column==col)], yrange$rangeb[which(yrange$column==col)])
+	plot(xrange, allrange, type="n", main=prettyAltmetricsColumns$pretty[match(col,prettyAltmetricsColumns$col)]
+)
+	
+	for (journal in journals) {
+		i = i+1
+		inJournal = which(dat$journal==journal)
+		journal.background = dat.background[[journal]]
+		#quartz()		
+		lines(dat[inJournal, "pubDateVal"], journal.background[,col], col=cbgRaw[i], lwd=3)
+	}
+}
+#plot(1)
+legend("center", journals, col = cbgRaw[1:7], lty=1, bty="n", fill=cbgRaw[1:7])
+title(paste("Trends over time per journal"), outer=TRUE)
+dev.off()
 
 
 ############ TABLES ON CORRELATIONS AND ODDS RATIOS WITH CITATIONS
@@ -378,84 +439,7 @@ evaluate_Weka_classifier(fit)
 #fit <- ctree(wosCountThru2011 ~ ., data=subset(dat.research, format(pubDate, "%Y")=="2009", predictionColumns))
 #plot(fit, main="Conditional Inference Tree for wosCountThru2011")
    
-############## FIGURE OF HAMMING WINDOW
 
-library(signal)
-window = hamming(WINDOW_WIDTH_IN_DAYS)
-png("img/hamming.png")
-days = seq(window)- length(window)/2
-plot(days, window)
-dev.off()
-
-
-############# FIGURE OF EVENT CREATION BY CREATOR
-
-
-art <-read.csv(paste(PATH_TO_RAW_DATA, "raw_event_counts.txt.gz", sep=""), sep="\t")
-
-# restrict events to those on research articles
-art.r <- art[art$articleType=="Research Article", ]
-d <- d[d$doi %in%  art.r$doi,]
-
-# column for which journal
-d$journal <- substr(d$doi, 17, 20)
-
-# get the events
-bt = subset(d, eventType %in% c("citeulike","delicious", "backtweets"))
-
-# frame for just Plos ONE, where we have much more data
-bt.pone <- bt[bt$journal == "pone",]
-bt.pone$doi <- factor(bt.pone$doi[1:nrow(bt.pone)]) #drop unused levels
-bt.pone$creator <- factor(bt.pone$creator[1:nrow(bt.pone)])
-
-# remove tweets with negative latency
-nrow(bt.pone[bt.pone$latency <= 0,]) / nrow(bt.pone) # 2%
-bt.pone = bt.pone[bt.pone$latency > 0,]
-
-# check out the distributions (as expected, mostly power-law)
-#creators <- ddply(bt.pone, .(creator, eventType), summarize, length(unique(creator)))
-
-creators.df = data.frame(creator=NULL, num_creations=NULL, eventType=NULL)
-for (eType in c("citeulike","delicious", "backtweets")) {
-    sub = subset(bt.pone, eventType==eType)
-    creators <- rev(sort(table(sub$creator)))
-    creators.df = rbind(creators.df, data.frame(creator=names(creators), num_creations=creators, eventType=eType))
-#plot(creators, log="xy")
-}
-
-png("img/number_creators.png", width=600, height=300)
-ggplot(data=creators.df, aes(x=num_creations)) + geom_histogram(binwidth=0.35, position="identity") + scale_x_log10(formatter="comma", breaks=c(0, 1, 10, 100, 1000)) + scale_y_log10(formatter="comma", breaks=c(0, 1, 10, 100, 1000)) + labs(x="number of events", y="number of distinct event creators") + theme_bw() + cbgFillPalette + facet_grid(~ eventType)
-dev.off()
-
-############ FIGURE ON CUMULATIVE EVENTS OVER TIME, BY METRIC
-
-bt.pone <- d[bt$journal == "pone",]
-
-# remove tweets with negative latency
-nrow(bt.pone[bt.pone$latency <= 0,]) / nrow(bt.pone) 
-bt.pone = bt.pone[bt.pone$latency > 0,]
-bt.pone = bt.pone[bt.pone$latency < (60*60*24*365*5),]
-
-months.df = data.frame(month=NULL, num_events=NULL, eventType=NULL)
-for (eType in c("html views", "pdf views", "native comments", "citeulike", "backtweets", "delicious")) {
-    sub = subset(bt.pone, eventType==eType)
-    sub$latency_round = round(sub$latency/(60*60*24*7), 0)
-    sub = ddply(sub, .(latency_round), summarise, total=sum(count))
-    months.df = rbind(months.df, data.frame(month=sub$latency_round, num_events=sub$total, eventType=eType))
-    #plot(as.numeric(names(months)), months)
-#plot(creators, log="xy")
-}
-
-
-png("img/events_by_latency.png", width=600, height=500)
-ggplot(data=months.df, aes(x=month, y=num_events, color=eventType)) + 
-    geom_point(aes(alpha=0.5)) + 
-    scale_y_log10(breaks=c(1, 10, 100, 1000, 10000, 100000), labels=c(1, 10, 100, 1000, 10000, 100000)) + 
-    scale_x_continuous(breaks=c((1:5)*52)) + 
-    labs(x="weeks since publication", y="total events each week") + 
-    theme_bw() + cbgColourPalette + cbgFillPalette + 
-    geom_smooth(span=0.3) + scale_alpha(legend = FALSE)
-dev.off()
 
 
 
@@ -581,43 +565,6 @@ ggplot(mycor_melted, aes(col, variable)) + geom_tile(aes(fill = value), colour =
 
 dev.off()    
 
-############
-
-source("do_normalization_viz.R")
-
-load(file = "../data/derived/dat_backgrounds.RData")
-
-journals = names(dat.background)
-dat = dat.research
-yrange = get_ranges(dat, altmetricsColumns)
-
-cols = altmetricsColumns
-dat$pubDateVal = strptime(dat$pubDate, "%Y-%m-%d")
-dat$pubDateVal = as.POSIXct(dat$pubDateVal)
-xrange = range(dat$pubDateVal)
-
-png(paste("img/mean_over_time_all.png", sep=""), width=800, height=800)
-
-#quartz()
-par(mfrow = c(ceiling(length(altmetricsColumns)/4), 4), oma=c(2,2,4,2), mar=c(3, 2, 1.5, 2))
-for (col in cols) {
-	i=0
-	allrange = c(yrange$rangea[which(yrange$column==col)], yrange$rangeb[which(yrange$column==col)])
-	plot(xrange, allrange, type="n", main=prettyAltmetricsColumns$pretty[match(col,prettyAltmetricsColumns$col)]
-)
-	
-	for (journal in journals) {
-		i = i+1
-		inJournal = which(dat$journal==journal)
-		journal.background = dat.background[[journal]]
-		#quartz()		
-		lines(dat[inJournal, "pubDateVal"], journal.background[,col], col=cbgRaw[i], lwd=3)
-	}
-}
-#plot(1)
-legend("center", journals, col = cbgRaw[1:7], lty=1, bty="n", fill=cbgRaw[1:7])
-title(paste("Trends over time per journal"), outer=TRUE)
-dev.off()
 
 
 #############
