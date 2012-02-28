@@ -1,3 +1,7 @@
+#setup.eps.figure(PATH_TO_TABLES & "table4")
+#close.eps.figure(PATH_TO_TABLES & "table4")
+
+
 ####### GET SET UP
 
 PATH_TO_RAW_DATA = "../data/raw/"
@@ -11,12 +15,12 @@ options(width=50)
 
 source("lookup_tables.R")
 source("utils.R")
-
+source("preprocessing_eventcounts_norm.R")
 
 ### preprocess the data, if haven't done that yet
 
-source("create_df_research")
-source("create_df_research_norm_transform")
+#source("create_df_research.R")
+#source("create_df_research_norm_transform.R") #takes a long time
 
 
 ### read in all the data
@@ -117,57 +121,58 @@ raw_crawler_events <- raw_crawler_events[raw_crawler_events$doi %in%  raw_crawle
 # column for which journal
 raw_crawler_events$journal <- substr(raw_crawler_events$doi, 17, 20)
 
-#######
+# get the indicators with event dates
+df_events = subset(raw_crawler_events, eventType %in% c("citeulike","delicious", "backtweets"))
 
-# get the events
-bt = subset(raw_crawler_events, eventType %in% c("citeulike","delicious", "backtweets"))
+# frame for just Plos ONE, where we have the most data
+df_events_pone <- df_events[df_events$journal == "pone",]
+df_events_pone$doi <- factor(df_events_pone$doi[1:nrow(df_events_pone)]) #drop unused levels
+df_events_pone$creator <- factor(df_events_pone$creator[1:nrow(df_events_pone)])
 
-# frame for just Plos ONE, where we have much more data
-bt.pone <- bt[bt$journal == "pone",]
-bt.pone$doi <- factor(bt.pone$doi[1:nrow(bt.pone)]) #drop unused levels
-bt.pone$creator <- factor(bt.pone$creator[1:nrow(bt.pone)])
-
-# remove tweets with negative latency
-nrow(bt.pone[bt.pone$latency <= 0,]) / nrow(bt.pone) # 2%
-bt.pone = bt.pone[bt.pone$latency > 0,]
+# remove events with negative latency
+nrow(df_events_pone[df_events_pone$latency <= 0,]) / nrow(df_events_pone) # 2%
+df_events_pone = df_events_pone[df_events_pone$latency > 0,]
 
 # check out the distributions (as expected, mostly power-law)
 #creators <- ddply(bt.pone, .(creator, eventType), summarize, length(unique(creator)))
 
-creators.df = data.frame(creator=NULL, num_creations=NULL, eventType=NULL)
+df_event_creators = data.frame(creator=NULL, num_creations=NULL, eventType=NULL)
 for (eType in c("citeulike","delicious", "backtweets")) {
-    sub = subset(bt.pone, eventType==eType)
-    creators <- rev(sort(table(sub$creator)))
-    creators.df = rbind(creators.df, data.frame(creator=names(creators), num_creations=creators, eventType=eType))
+    df_events_pone_eType = subset(df_events_pone, eventType==eType)
+    creators <- rev(sort(table(df_events_pone_eType$creator)))
+    df_event_creators = rbind(df_event_creators, data.frame(creator=names(creators), num_creations=creators, eventType=eType))
 #plot(creators, log="xy")
 }
 
 png(PATH_TO_FIGURES & "figure5.png", width=600, height=300)
-ggplot(data=creators.df, aes(x=num_creations)) + geom_histogram(binwidth=0.35, position="identity") + scale_x_log10(formatter="comma", breaks=c(0, 1, 10, 100, 1000)) + scale_y_log10(formatter="comma", breaks=c(0, 1, 10, 100, 1000)) + labs(x="number of events", y="number of distinct event creators") + theme_bw() + cbgFillPalette + facet_grid(~ eventType)
+ggplot(data=df_event_creators, aes(x=num_creations)) + 
+    geom_histogram(binwidth=0.35, position="identity") + 
+    scale_x_log10(formatter="comma", breaks=c(0, 1, 10, 100, 1000)) + 
+    scale_y_log10(formatter="comma", breaks=c(0, 1, 10, 100, 1000)) + 
+    labs(x="number of events", y="number of distinct event creators") + 
+    theme_bw() + cbgFillPalette + facet_grid(~ eventType)
 dev.off()
 
 ############ FIGURE 6:   EVENTS OVER TIME, BY METRIC
 
 df_events = raw_crawler_events
 
-# remove tweets with negative latency
+# remove tweets with negative latency or that are more than five years old (a few weird outliers)
 nrow(df_events[df_events$latency <= 0,]) / nrow(df_events) 
 df_events = df_events[df_events$latency > 0,]
 df_events = df_events[df_events$latency < (60*60*24*365*5),]
 
-months.df = data.frame(month=NULL, num_events=NULL, eventType=NULL)
+df_events_by_week = data.frame(week=NULL, num_events=NULL, eventType=NULL)
 for (eType in c("html views", "pdf views", "native comments", "citeulike", "backtweets", "delicious")) {
-    sub = subset(df_events, eventType==eType)
-    sub$latency_round = round(sub$latency/(60*60*24*7), 0)
-    sub = ddply(sub, .(latency_round), summarise, total=sum(count))
-    months.df = rbind(months.df, data.frame(month=sub$latency_round, num_events=sub$total, eventType=eType))
-    #plot(as.numeric(names(months)), months)
-#plot(creators, log="xy")
+    df_events_by_week_eType = subset(df_events, eventType==eType)
+    df_events_by_week_eType$latency_round = round(df_events_by_week_eType$latency/(60*60*24*7), 0)
+    df_events_by_week_eType = ddply(df_events_by_week_eType, .(latency_round), summarise, total=sum(count))
+    df_events_by_week = rbind(df_events_by_week, data.frame(week=df_events_by_week_eType$latency_round, num_events=df_events_by_week_eType$total, eventType=prettyETypeColumns[eType]))
 }
 
 
 png(PATH_TO_FIGURES & "figure6.png", width=600, height=500)
-ggplot(data=months.df, aes(x=month, y=num_events, color=eventType)) + 
+ggplot(data=df_events_by_week, aes(x=week, y=num_events, color=eventType)) + 
     geom_point(aes(alpha=0.5)) + 
     scale_y_log10(breaks=c(1, 10, 100, 1000, 10000, 100000), labels=c(1, 10, 100, 1000, 10000, 100000)) + 
     scale_x_continuous(breaks=c((1:5)*52)) + 
@@ -178,7 +183,7 @@ dev.off()
 
 
 
-############  FIGURE 7:  events by latency
+############  FIGURE 7:  average metric values vs publication date, by journal
 
 journals = names(list_df_backgrounds)
 yrange = get_ranges(df_research, altmetricsColumns)
@@ -312,12 +317,12 @@ df$col <- with(df, factor(col, levels=col, ordered=TRUE))
 
 fa.cor.melted <- melt(df, id.vars="col")
 
-png(PATH_TO_FIGURES & "figure10.png", width=800, height=800)
+png(PATH_TO_FIGURES & "figure10.png", width=600, height=600)
 
 ggplot(fa.cor.melted, aes(col, variable)) + geom_tile(aes(fill = value+1),
      colour = "white") + scale_fill_gradient2(low = "grey50", mid="white", high = "steelblue", trans="log", midpoint=0) + 
      theme_grey(base_size = 12) + labs(x = "", y = "") + scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0)) + 
-     opts(legend.position = "none", axis.ticks = theme_blank(), axis.text.x = theme_text(size = 12, angle = 340, hjust = 0.5, colour = "black"), axis.text.y = theme_text(size = 12, hjust = 1, colour = "black")) + 
+     opts(legend.position = "none", axis.ticks = theme_blank(), axis.text.x = theme_text(size = 12, angle = 270, hjust = 0, colour = "black"), axis.text.y = theme_text(size = 12, hjust = 1, colour = "black")) + 
      geom_text(aes(x=col,y=variable, label=sprintf("%.1f", value)), data=fa.cor.melted, size=5, colour="black")
 
 dev.off()
@@ -328,48 +333,62 @@ dev.off()
 ############ Table 4: TABLE WITH CORRELATIONS TO CITATIONS
 
 library(plyr)
-source("utils.R")
 
-dat = c()
-for (myjournal in c("pbio", "ppat", "pone")) {
-    cat("\n", myjournal)
-    dat_journal2010 = subset(df_research, journal==myjournal)
-    dat_journal2010 = subset(dat_journal2010, year=="2010")
-    mycor = calc.correlations(dat_journal2010[, altmetricsColumns], "pairwise.complete.obs", "spearman")
-    dat = cbind(mycor[,"wosCountThru2011"], dat)
-    colnames(dat)[1] = paste(myjournal, " 2010 (n=", dim(dat_journal2010)[1], ")", sep="")
+create_journal_correlation_table = function(spearman_2010=TRUE, tablename) {
+    
+    dat = c()
+    for (myjournal in c("pbio", "ppat", "pone")) {
+        cat("\n", myjournal)
+    
+        if (spearman_2010) {
+            dat_journal2010 = subset(df_research, journal==myjournal)
+            dat_journal2010 = subset(dat_journal2010, year=="2010")
+            mycor = calc.correlations(dat_journal2010[, altmetricsColumns], "pairwise.complete.obs", "spearman")
+            dat = cbind(mycor[,"wosCountThru2011"], dat)
+            colnames(dat)[1] = paste(myjournal, " 2010 (n=", dim(dat_journal2010)[1], ")", sep="")
+        } else {
+            dat_journal = subset(df_research_norm_transform, journal==myjournal)
+            mycor = calc.correlations(dat_journal[, altmetricsColumns], "pairwise.complete.obs", "pearson")
+            dat = cbind(mycor[,"wosCountThru2011"], dat)
+            colnames(dat)[1] = paste(myjournal, " (n=", dim(dat_journal)[1], ")", sep="")
+        }
+    
+    }
+
+    print(round(dat[sort.list(dat[,1], dec=T),], 2))
+
+    # Based on example at http://learnr.wordpress.com/2010/01/26/ggplot2-quick-heatmap-plotting/
+    rownames(dat) = prettyAltmetricsColumns[rownames(dat)]
+
+    dat_melted = melt(dat)
+    dat_melted$X2 <- factor(dat_melted$X2, levels(dat_melted$X2)[c(2, 3, 1)], ordered=T)
+    dat_melted$X1 <- factor(dat_melted$X1, levels(dat_melted$X1)[sort.list(dat[levels(dat_melted$X1),1], dec=F)], ordered=T)
+
+    png(PATH_TO_TABLES & tablename & ".png", width=600, height=500)
+    p = ggplot(dat_melted, aes(X2, X1)) + 
+        geom_tile(aes(fill = value), colour = "white") + 
+        scale_fill_gradient(low = "white", high = "steelblue") + 
+         theme_grey(base_size = 12) + labs(x = "", y = "") + 
+         scale_x_discrete(expand = c(0, 0)) + 
+         scale_y_discrete(expand = c(0, 0)) + 
+         opts(legend.position = "none", axis.ticks = theme_blank(), axis.text.x = theme_text(size = 12, angle = 340, hjust = 0.5, colour = "black"), axis.text.y = theme_text(size = 12, hjust = 1, colour = "black")) + 
+         geom_text(aes(x=X2,y=X1, label=sprintf("%.1f", value)), data=dat_melted, size=4, colour="black")
+    print(p)
+    dev.off()
+
+    print(xtable(dat, digits=2), type="html", html.table.attributes = "border = '0'", file=PATH_TO_TABLES & tablename & ".html")
+    write.table(dat, PATH_TO_TABLES & tablename & ".csv", sep=",", col.names=FALSE)
 }
 
-print(round(dat[sort.list(dat[,1], dec=T),], 2))
-
-# Based on example at http://learnr.wordpress.com/2010/01/26/ggplot2-quick-heatmap-plotting/
-rownames(dat) = prettyAltmetricsColumns[rownames(dat)]
-
-dat_melted = melt(dat)
-dat_melted$X2 <- factor(dat_melted$X2, levels(dat_melted$X2)[c(2, 3, 1)], ordered=T)
-dat_melted$X1 <- factor(dat_melted$X1, levels(dat_melted$X1)[sort.list(dat[levels(dat_melted$X1),1], dec=F)], ordered=T)
-
-png(PATH_TO_TABLES & "table4.png", width=600, height=500)
-ggplot(dat_melted, aes(X2, X1)) + 
-    geom_tile(aes(fill = value), colour = "white") + 
-    scale_fill_gradient(low = "white", high = "steelblue") + 
-     theme_grey(base_size = 12) + labs(x = "", y = "") + 
-     scale_x_discrete(expand = c(0, 0)) + 
-     scale_y_discrete(expand = c(0, 0)) + 
-     opts(legend.position = "none", axis.ticks = theme_blank(), axis.text.x = theme_text(size = 12, angle = 340, hjust = 0.5, colour = "black"), axis.text.y = theme_text(size = 12, hjust = 1, colour = "black")) + 
-     geom_text(aes(x=X2,y=X1, label=sprintf("%.1f", value)), data=dat_melted, size=4, colour="black")
-dev.off()
-
-print(xtable(dat, digits=2), type="html", html.table.attributes = "border = '0'", file=PATH_TO_TABLES & "table4.html")
-write.table(dat, PATH_TO_TABLES & "table4.csv", sep=",", col.names=FALSE)
-
+create_journal_correlation_table(TRUE, "table4A")
+create_journal_correlation_table(FALSE, "table4B")
 
 ########## Figure 11:  PLOT CLUSTER CENTERS
 
 clusterColumns = c("htmlDownloadsCount","mendeleyReadersCount","wosCountThru2011","f1000Factor")
 clusterColumns = append(clusterColumns, "shareCombo")
 
-prettyClusterNames = c("HTML page views", "Mendeley bookmarks", "Web of Science cites", "F1000 rating", "Sharing combo")
+prettyClusterNames = c("HTML pageviews", "Mendeley saves", "Web of Science cites", "F1000 rating", "Sharing combo")
 names(prettyClusterNames) = clusterColumns
 
 source("dat_cluster_centers.create.R")
@@ -393,12 +412,12 @@ dat.for.cluster = combo_and_scale(dat)
 #title("PLoS ONE (2007-2009)")
 
 NUMBER.CLUSTERS = 5
-set.seed(43)
 ### DID TRY THIS MORE TIMES TO VERIFY THIS SEED GETS THE LOWEST WSS RESULT AT THE END
-for (i in seq(1:1)){
-    cluster_fit = cluster_assignments(dat.for.cluster[,clusterColumns], NUMBER.CLUSTERS)
+for (i in seq(0:1)){
+    set.seed(44)
+    cluster_fit = kmeans(dat.for.cluster[,clusterColumns], NUMBER.CLUSTERS, iter.max=100)
     dat_with_cluster_assignments <- data.frame(dat.for.cluster, cluster=cluster_fit$cluster)
-    plot_cluster_centers(cluster_fit, prettyClusterNames)
+    #plot_cluster_centers(cluster_fit, prettyClusterNames)
     
     cluster_labels_simple = paste("cluster ", LETTERS[1:length(cluster_fit$size)], sep="")
     cluster_labels = paste("cluster ", LETTERS[1:length(cluster_fit$size)], " (", round(100*cluster_fit$size/sum(cluster_fit$size), 0), "%)", sep="")
@@ -410,9 +429,13 @@ for (i in seq(1:1)){
     print(cluster_fit$tot.withinss)
 }
 
-
+center_names = paste("cluster ", c("C", "D", "E", "B", "A"), sep="")
+rownames(cluster_fit$centers) = paste("cluster ", c("C", "D", "E", "B", "A"), sep="")
 a = t(round((cluster_fit$centers)[sorted_size,clusterColumns], 1))
-colnames(a) = cluster_labels[sorted_size]
+
+# To match the labels I gave them initially
+#colnames(a) = paste("cluster ", c("E", "B", "A", "D", "C"), sep="")
+
 
 #round(t(prop.table(table(dat_with_cluster_assignments$cluster, dat_with_cluster_assignments$year), 2)), 2)
 #round(t(prop.table(table(dat_with_cluster_assignments$cluster, cut(dat_with_cluster_assignments$authorsCount, c(0, 2, 5, 10, 200))), 2)), 2)
@@ -491,7 +514,7 @@ write.table(subset(specific_center_exemplars, TRUE, c("title", "doi", "cluster")
 
 write("<ul>", file=PATH_TO_TABLES & "table5.html", append=F)
 for (i in seq(specific_center_exemplars[,1])) {
-    write(sprintf("<li>%s, <a href='http://dx.doi.org/%s'>%s</a> (<a href='http://www.plosone.org/article/metrics/info:doi/%s'>metrics</a>)", cluster_labels_simple[specific_center_exemplars[i,]$cluster], specific_center_exemplars[i,]$doi, specific_center_exemplars[i,]$title, specific_center_exemplars[i,]$doi), file=PATH_TO_TABLES & "table5.html", append=T)
+    write(sprintf("<li>%s, <a href='http://dx.doi.org/%s'>%s</a> (<a href='http://www.plosone.org/article/metrics/info:doi/%s'>metrics</a>)", center_names[specific_center_exemplars[i,]$cluster], specific_center_exemplars[i,]$doi, specific_center_exemplars[i,]$title, specific_center_exemplars[i,]$doi), file=PATH_TO_TABLES & "table5.html", append=T)
 }
 write("</ul>", file=PATH_TO_TABLES & "table5.html", append=T)
 
@@ -505,7 +528,8 @@ write.table(subset(specific_center_exemplars, TRUE, c("title", "doi", "cluster")
 
 library(RWeka)
 
-dat = subset(df_research_norm_transform, (journal=="pone") & (as.numeric(year) >= 2010))
+dat = subset(df_research_norm_transform, (journal=="pone"))
+dat = subset(dat, (as.numeric(year) >= 2010))
 dat.for.tree.scaled = combo_and_scale(dat)
 dat_for_tree_with_clusters = predict_centers(dat.for.tree.scaled, cluster_fit)
 dat_for_tree_with_clusters$cluster = dat_for_tree_with_clusters$cluster_guess
@@ -515,7 +539,7 @@ dat.for.tree.unnormalized = merge(df_research, dat_for_tree_with_clusters[,c("do
 predictionColumns = c("htmlDownloadsCount","mendeleyReadersCount","wosCountThru2011", "f1000Factor","wikipediaCites", "facebookShareCount", "deliciousCount", "almBlogsCount", "backtweetsCount")
 
 fit <- JRip(factor(cluster) ~ ., data=dat.for.tree.unnormalized[,append(predictionColumns, "cluster")], control = Weka_control(R = TRUE, N=50))
-fit$levels = cluster_labels_simple
+fit$levels = center_names
 fit
 
 ########### table 7

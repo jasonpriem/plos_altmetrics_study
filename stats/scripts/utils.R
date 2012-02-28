@@ -49,3 +49,52 @@ calc.correlations <- function
   mycorr
   ### Return the correlation matrix
 } 
+
+
+# PLoS standards from http://www.plosone.org/static/figureGuidelines.action#quickref
+MAX.FIGURE.WIDTH = 6.83
+MAX.FIGURE.HEIGHT = 8
+
+setup.eps.figure = function
+### Set up a graphics object for plotting a journal-ready .eps figure
+### call this, then do the plot, then call dev.off()
+(
+    filename,   ##<< filename for resulting eps file.  Will get .eps appended
+    width=6.83, ##<< figure width, in inches
+    height=8    ##<< figure height, in inches
+) {
+  filename.with.extension = paste(filename, ".eps", sep="")
+  postscript(file=filename.with.extension,
+              paper="special",
+              width=width,
+              height=height,
+              family="sans",              
+              onefile=FALSE,
+              pagecentre=FALSE,
+              horizontal=FALSE)
+   return()
+   
+   ##examples<<
+   setup.eps.figure("figure1", 6, 8)
+   plot(c(1, 2, 3), c(2, 4, 6))
+   close.eps.figure("figure1")
+}
+
+
+close.eps.figure = function
+### Closes a graphics object and embeds fonts in he associated .eps figure
+### To be used with setup.eps.figure
+(
+    filename    ##<< filename of eps file.  Will get .eps appended
+) {
+    filename.with.extension = paste(filename, ".eps", sep="")
+    dev.off()
+    embedFonts(filename.with.extension, outfile=filename.with.extension)    
+    return()
+    
+   ##examples<<
+   setup.eps.figure("figure1", 6, 8)
+   plot(c(1, 2, 3), c(2, 4, 6))
+   close.eps.figure("figure1")
+}
+

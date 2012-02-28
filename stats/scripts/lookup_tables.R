@@ -37,9 +37,9 @@ prettyAltmetricsColumns = c(
     "PubMed Central cites",
     "CrossRef cites",
     "PDF downloads",
-    "HTML page views", 
-    "Mendeley bookmarks", 
-    "CiteULike bookmarks", 
+    "HTML pageviews", 
+    "Mendeley saves", 
+    "CiteULike saves", 
     "PLoS comments", 
     "PLoS comment responses", 
     "Delicious bookmarks", 
@@ -53,3 +53,10 @@ prettyAltmetricsColumns = c(
     "Twitter mentions")
 names(prettyAltmetricsColumns) = altmetricsColumns
 
+prettyETypeColumns = c("HTML pageviews", 
+    "PDF downloads",
+    "PLoS comments", 
+    "CiteULike saves", 
+    "Twitter mentions",
+    "Delicious bookmarks")
+names(prettyETypeColumns) = c("html views", "pdf views", "native comments", "citeulike", "backtweets", "delicious")

@@ -1,13 +1,3 @@
-# Makes a new event_trends.txt dataset.
-# event_trends.txt shows counts of those events that have <90 days latency.
-# Latency is defined as the time between an event and the publication
-# of the article it points at.
-# Event counts are given by event type, journal, and year/quarter.
-#
-# Requires: 
-#  raw_events.txt
-#  raw_event_counts.txt
-
 # housekeeping
 options(width=250)
 #setwd("/home/jason/projects/Plos altmetrics study")
@@ -31,6 +21,11 @@ eve.r$latency[eve.r$latency < 0] <- 0
 
 # add all DOIs as levels of events$doi factor
 eve.r$doi<-factor(eve.r$doi, levels=levels(art.r$doi))
+
+# set params
+window.latency = 90*24*60*60 # 90 days
+#window.latency = 7*24*60*60 
+events.byqtr<-NULL # for use in testing
 
 # create a table of number of articles with events of a given type and under a given latency
 # This is sorted by both journal and quarter of article's publication
@@ -92,10 +87,6 @@ get.quarterly.counts.restricted.by.latency <- function(events, articles, eventTy
 
 }
 
-# set params
-window.latency = 90*24*60*60 # 90 days
-#window.latency = 7*24*60*60 
-events.byqtr<-NULL # for use in testing
 
 # Add each event type to the big return table
 eventTypes <- levels(eve.r$eventType)
@@ -110,24 +101,4 @@ for (eventType in eventTypes[2:length(eventTypes)]) {
 events.byqtr$qtr<-as.numeric(as.yearqtr(events.byqtr$qtr))
 
 # save output
-write.table(events.byqtr, paste(PATH_TO_DERIVED_DATA, "event_trends.txt", sep=""), sep="\t", row.names=FALSE, quote=FALSE)
-
-
-############
-
-
-#load(paste(PATH_TO_DERIVED_DATA, "dat_research.RData", sep=""))
-#load(paste(PATH_TO_DERIVED_DATA, "dat_research_norm_transform.RData", sep=""))
-d <-read.csv(paste(PATH_TO_RAW_DATA, "raw_crawler_events.txt.gz", sep=""), sep="\t")
-d$pubDate  = strptime(d$date, "%Y-%m-%dT")
-
-art <-read.csv(paste(PATH_TO_RAW_DATA, "raw_crawler_eventcounts.txt.gz", sep=""), sep="\t")
-
-# restrict events to those on research articles
-art.r <- art[art$articleType=="Research Article", ]
-d <- d[d$doi %in%  art.r$doi,]
-
-# column for which journal
-d$journal <- substr(d$doi, 17, 20)
-
-
+write.table(events.byqtr, paste(PATH_TO_DERIVED_DATA, "df_event_trends.txt", sep=""), sep="\t", row.names=FALSE, quote=FALSE)
