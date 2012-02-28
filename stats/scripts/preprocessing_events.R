@@ -113,4 +113,21 @@ events.byqtr$qtr<-as.numeric(as.yearqtr(events.byqtr$qtr))
 write.table(events.byqtr, paste(PATH_TO_DERIVED_DATA, "event_trends.txt", sep=""), sep="\t", row.names=FALSE, quote=FALSE)
 
 
+############
+
+
+#load(paste(PATH_TO_DERIVED_DATA, "dat_research.RData", sep=""))
+#load(paste(PATH_TO_DERIVED_DATA, "dat_research_norm_transform.RData", sep=""))
+d <-read.csv(paste(PATH_TO_RAW_DATA, "raw_crawler_events.txt.gz", sep=""), sep="\t")
+d$pubDate  = strptime(d$date, "%Y-%m-%dT")
+
+art <-read.csv(paste(PATH_TO_RAW_DATA, "raw_crawler_eventcounts.txt.gz", sep=""), sep="\t")
+
+# restrict events to those on research articles
+art.r <- art[art$articleType=="Research Article", ]
+d <- d[d$doi %in%  art.r$doi,]
+
+# column for which journal
+d$journal <- substr(d$doi, 17, 20)
+
 

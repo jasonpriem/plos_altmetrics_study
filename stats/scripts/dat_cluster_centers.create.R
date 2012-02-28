@@ -132,7 +132,7 @@ plot_cluster_centers = function(cluster_fit, prettyColumnNames){
   #cluster_labels = paste(colnames(t(cluster_fit$centers)), " (", table(cluster_fit$cluster), ")", sep="")       
   #cluster_labels = paste("flavour ", colnames(t(cluster_fit$centers)), " (", round(100*cluster_fit$size/sum(cluster_fit$size), 0), "%)", sep="")       
   cluster_labels = paste("flavour ", LETTERS[1:length(cluster_fit$size)], " (", round(100*cluster_fit$size/sum(cluster_fit$size), 0), "%)", sep="")
-  metric_labels = prettyColumnNames$pretty[match(colnames(cluster_fit$centers),prettyColumnNames$col)]
+  metric_labels = prettyColumnNames[colnames(cluster_fit$centers)]
   #colorRange = round(range(cluster_fit$centers) * 15) + 16
   #colorChoices = bluered(32)[colorRange[1]:colorRange[2]]
   colorChoices = rgb((0:64)/64, green=0, blue=0)

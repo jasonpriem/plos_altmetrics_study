@@ -1,22 +1,36 @@
-##### create dat.research
-    
-source("counts_clean_merge_filter.R")
-    
-dat_raw_wos_2010 = read.csv("../data/raw/raw_wos_2010.txt.gz", header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
-dat_raw_wos_2011 = read.csv("../data/raw/raw_wos_2011.txt.gz", header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="", row.names=NULL)
-dat_raw_event_counts = read.csv("../data/raw/raw_event_counts.txt.gz", header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
+##### create df_all and df_research
 
-dat_altmetrics_cleaned = clean_crawler_counts(dat_raw_event_counts)
-dat.extracted.wos.2010 = clean_wos_counts(dat_raw_wos_2010)  
-dat.extracted.wos.2011 = clean_wos_counts(dat_raw_wos_2011)  
+# set up
+PATH_TO_RAW_DATA = "../data/raw/"
+PATH_TO_DERIVED_DATA = "../data/derived/"
 
-dat.merged.2010 = merge_crawler_and_wos_counts(dat_altmetrics_cleaned, dat.extracted.wos.2010)
-names(dat.merged.2010)[names(dat.merged.2010)=="wosCount"] = "wosCountThru2010"
-dat.merged.2011 = merge_crawler_and_wos_counts(dat_altmetrics_cleaned, dat.extracted.wos.2011)
-names(dat.merged.2011)[names(dat.merged.2011)=="wosCount"] = "wosCountThru2011"
-dat.merged.2010.2011 = merge_crawler_and_wos_counts(dat.merged.2010, subset(dat.merged.2011, select=c(doi, wosCountThru2011)))
-dat.merged = dat.merged.2010.2011
+source("utils.R")
+source("preprocessing_eventcounts_clean.R")
 
-dat.research = research_articles_only(dat.merged)
-dim(dat.research)
-save(dat.research, file = "../data/derived/dat_research.RData", compress="gzip")
+# read raw data    
+raw_wos2010_eventcounts = read.csv(paste(PATH_TO_RAW_DATA, "raw_wos2010_eventcounts.txt.gz", sep=""), header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
+raw_wos2011_eventcounts = read.csv(paste(PATH_TO_RAW_DATA, "raw_wos2011_eventcounts.txt.gz", sep=""), header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="", row.names=NULL)
+raw_crawler_eventcounts = read.csv(paste(PATH_TO_RAW_DATA, "raw_crawler_eventcounts.txt.gz", sep=""), header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
+
+# clean up data
+df_wos2010_clean = clean_wos_counts(raw_wos2010_eventcounts)  
+df_wos2011_clean = clean_wos_counts(raw_wos2011_eventcounts)  
+df_eventcounts_clean = clean_crawler_counts(raw_crawler_eventcounts)
+
+# do merging of Web of Science data into other indicators
+# 2010
+df_wos2010_merged = merge_crawler_and_wos_counts(df_eventcounts_clean, df_wos2010_clean)
+names(df_wos2010_merged)[names(df_wos2010_merged)=="wosCount"] = "wosCountThru2010"
+# 2011
+df_wos2011_merged = merge_crawler_and_wos_counts(df_eventcounts_clean, df_wos2011_clean)
+names(df_wos2011_merged)[names(df_wos2011_merged)=="wosCount"] = "wosCountThru2011"
+# merge 2010 and 2011
+df_merged = merge_crawler_and_wos_counts(df_wos2010_merged, subset(df_wos2011_merged, select=c(doi, wosCountThru2011)))
+# save it
+write.table.gzip(df_merged, PATH_TO_DERIVED_DATA, "df_all.txt")
+
+# select research articles only
+df_research = research_articles_only(df_merged)
+dim(df_research)
+# save it
+write.table.gzip(df_research, PATH_TO_DERIVED_DATA, "df_research.txt")

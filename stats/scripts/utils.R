@@ -1,6 +1,16 @@
 #colourblind friendly palettes from http://wiki.stdout.org/rcookbook/Graphs/Colors%20(ggplot2)
-cbgFillPalette <- scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
-cbgColourPalette <- scale_colour_manual(values=c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
+library(ggplot2)
+cbgRaw = c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+cbgFillPalette <- scale_fill_manual(values=cbgRaw)
+cbgColourPalette <- scale_colour_manual(values=cbgRaw)
+cbgColorPalette = cbgColourPalette
+
+# String concat operator from https://stat.ethz.ch/pipermail/r-help/2005-February/066709.html
+"&" <- function(...) UseMethod("&")
+"&.default" <- .Primitive("&")
+"&.character" <- function(...) paste(...,sep="")
+# "abc" & "def" & "ghi"
+
 
 write.table.gzip <- function
 ## Simple function to write out a dataframe and then gzip it

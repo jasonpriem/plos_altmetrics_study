@@ -315,29 +315,27 @@ do_norm_viz = function() {
 
 }
 
-get_dat_research_norm = function() {
+get_dat_research_norm = function(dat.research) {
+    # calculate backgrounds
     dat.backgrounds = backgrounds_for_each_journal(dat.research, altmetricsColumns, WINDOW_WIDTH_IN_DAYS)
-    save(dat.backgrounds, file = "../data/derived/dat_backgrounds.RData", compress="gzip")
-    plot_all_backgrounds_separately(dat.research, dat.backgrounds, altmetricsColumns)
-    plot_all_backgrounds_overlay(dat.research, dat.backgrounds, altmetricsColumns)
 
+    # do normalization
     dat.research.norm = normalize_altmetrics(dat.research, altmetricsColumns, dat.backgrounds)
-    save(dat.research.norm, file = "../data/derived/dat_research_norm.RData", compress="gzip")
     
-    ##details<< Do transformation
+    # do transformation
     transformation_function = function(x) {log(1+x)}  
     dat.research.norm.transform = dat.research.norm
     # but don't transform f1000 because it is a score not a count
     "%without%" <- function(x, y) x[!x %in% y] #--  x without y
     transformColumns = altmetricsColumns %without% "f1000Factor"
     dat.research.norm.transform[, transformColumns] = transformation_function(dat.research.norm[, transformColumns])
-    save(dat.research.norm.transform, file = "../data/derived/dat_research_norm_transform.RData", compress="gzip")
+
     return(list(dat.backgrounds=dat.backgrounds, 
                 dat.research.norm=dat.research.norm, 
                 dat.research.norm.transform=dat.research.norm.transform))
 }
 
-response = get_dat_research_norm()
-dat.backgrounds = response$dat.backgrounds
-dat.research.norm = response$dat.research.norm
-dat.research.norm.transform = response$dat.research.norm.transform
+#response = get_dat_research_norm()
+#dat.backgrounds = response$dat.backgrounds
+#dat.research.norm = response$dat.research.norm
+#dat.research.norm.transform = response$dat.research.norm.transform

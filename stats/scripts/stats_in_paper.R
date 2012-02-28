@@ -13,13 +13,26 @@ source("lookup_tables.R")
 source("utils.R")
 
 
+### preprocess the data, if haven't done that yet
+
+source("create_df_research")
+source("create_df_research_norm_transform")
+
+
+### read in all the data
+
+raw_crawler_eventcounts = read.csv(paste(PATH_TO_RAW_DATA, "raw_crawler_eventcounts.txt.gz", sep=""), header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
+df_research = read.csv(paste(PATH_TO_DERIVED_DATA, "df_research.txt.gz", sep=""), sep="\t")
+df_research_norm_transform = read.csv(paste(PATH_TO_DERIVED_DATA, "df_research_norm_transform.txt.gz", sep=""), sep="\t")
+load(paste(PATH_TO_DERIVED_DATA, "list_df_backgrounds.RData", sep=""))
+
+raw_crawler_events = read.csv(paste(PATH_TO_RAW_DATA, "raw_crawler_events.txt.gz", sep=""), sep="\t")
+
+
 ########## How many papers total
 
 source("preprocessing_eventcounts_clean.R")
-
-raw_crawler_eventcounts = read.csv(paste(PATH_TO_RAW_DATA, "raw_crawler_eventcounts.txt.gz", sep=""), header=TRUE, sep="\t", stringsAsFactors=FALSE, quote="")
 df_altmetrics_cleaned = clean_crawler_counts(raw_crawler_eventcounts)
-
 cat("Total papers with altmetrics data:", dim(df_altmetrics_cleaned)[1])
 
 ##### TABLE 1: assembled manually
@@ -36,50 +49,56 @@ dev.off()
 
 
 ##### TABLE 2:  Table on papers per year, per journal
-tablePaperDist = addmargins(table(dat.research$year, dat.research$journal))
+
+library(xtable)
+
+tablePaperDist = addmargins(table(df_research$year, df_research$journal))
 print(xtable(rbind(plos_journals[colnames(tablePaperDist)], tablePaperDist), digits=0), type="html", html.table.attributes = "border = '0'", file=PATH_TO_TABLES & "table2.html")
 write.table(rbind(plos_journals[colnames(tablePaperDist)], round(tablePaperDist, 0)), PATH_TO_TABLES & "table2.csv", sep=",", col.names=FALSE)
-
-# FIGURE ON PAPERS PER YEAR, JOURNAL
-#ggplot(dat.research, aes(x=year)) + stat_bin(aes(y=..count.., fill=journal)) + cbgFillPalette
 
 
 ######## FIGURE 2: proportion of papers with prettyAltmetricsColumns metrics, by metric
 
-dat.nonzero.indicator = dat.research
-dat.nonzero.indicator[,altmetricsColumns][dat.nonzero.indicator[,altmetricsColumns] > 1] = 1
-summary(dat.nonzero.indicator[,altmetricsColumns])
+df_nonzero_indicator = df_research
+df_nonzero_indicator[,altmetricsColumns][df_nonzero_indicator[,altmetricsColumns] > 1] = 1
+summary(df_nonzero_indicator[,altmetricsColumns])
 
-nonzero.freq = apply(dat.nonzero.indicator[,altmetricsColumns], 2, mean, na.rm=T)
-nonzero.freq <- nonzero.freq[sort.list(nonzero.freq, decreasing = T)]
+vector_nonzero_freq = apply(df_nonzero_indicator[,altmetricsColumns], 2, mean, na.rm=T)
+vector_nonzero_freq <- vector_nonzero_freq[sort.list(vector_nonzero_freq, decreasing = T)]
 
-prettyNames = prettyAltmetricsColumns[names(nonzero.freq)]
+prettyNames = prettyAltmetricsColumns[names(vector_nonzero_freq)]
 
-nonzero.df = data.frame(prettyNames=prettyNames, col=names(nonzero.freq), freq=nonzero.freq)
-nonzero.df$names <- factor(nonzero.df$prettyNames, levels=nonzero.df$prettyNames, ordered=T)
+df_nonzero_freq = data.frame(prettyNames=prettyNames, col=names(vector_nonzero_freq), freq=vector_nonzero_freq)
+df_nonzero_freq$names <- factor(df_nonzero_freq$prettyNames, levels=df_nonzero_freq$prettyNames, ordered=T)
 
 png(PATH_TO_FIGURES & "figure2.png", width=500, height=500)
-ggplot(nonzero.df) + geom_bar(aes(names, freq)) + scale_y_continuous("", formatter="percent", breaks=c(0, .2, .4, .6, .8, 1)) + labs(x="") + coord_flip() + theme_bw() + opts(title = "") + cbgFillPalette
+ggplot(df_nonzero_freq) + geom_bar(aes(names, freq)) + 
+    scale_y_continuous("", formatter="percent", breaks=c(0, .2, .4, .6, .8, 1)) + 
+    labs(x="") + coord_flip() + theme_bw() + opts(title = "") + cbgFillPalette
 dev.off()
 
 print(nonzero.freq)
 
-nonzero.freq.plosone = apply(subset(dat.nonzero.indicator, journal=="pone", altmetricsColumns), 2, mean, na.rm=T)
-nonzero.freq.plosone <- nonzero.freq.plosone[sort.list(nonzero.freq.plosone, decreasing = T)]
+vector_nonzero_freq_pone = apply(subset(df_nonzero_indicator, journal=="pone", altmetricsColumns), 2, mean, na.rm=T)
+vector_nonzero_freq_pone <- vector_nonzero_freq_pone[sort.list(vector_nonzero_freq_pone, decreasing = T)]
 
-print(nonzero.freq.plosone)
+print(vector_nonzero_freq_pone)
+
 
 ######## FIGURE 3: NUMBER OF NONZERO METRICS PER PAPER
 
-dat.nonzero.indicator.engaged = dat.nonzero.indicator
-dat.nonzero.indicator.engaged$num_nonzero = apply(subset(dat.nonzero.indicator[,altmetricsColumns], select= -c(wosCountThru2011, almScopusCount, almPubMedCentralCount, almCrossRefCount)), 1, sum, na.rm=T)
+df_nonzero_indicator_engaged = df_nonzero_indicator
+df_nonzero_indicator_engaged$num_nonzero = apply(subset(df_nonzero_indicator[,altmetricsColumns], select= -c(wosCountThru2011, almScopusCount, almPubMedCentralCount, almCrossRefCount)), 1, sum, na.rm=T)
 
-print(summary(dat.nonzero.indicator.engaged$num_nonzero))
+print(summary(df_nonzero_indicator_engaged$num_nonzero))
 
-print(cumsum(table(dat.nonzero.indicator.engaged$num_nonzero)))/length(dat.nonzero.indicator.engaged$num_nonzero)
+print(cumsum(table(df_nonzero_indicator_engaged$num_nonzero)))/length(df_nonzero_indicator_engaged$num_nonzero)
 
 png(PATH_TO_FIGURES & "figure3.png", width=500, height=500)
-ggplot(subset(dat.nonzero.indicator.engaged, num_nonzero>=2), aes(x=num_nonzero)) + geom_histogram(aes(y=..density..), alpha=0.5, binwidth=1, position="identity", breaks=1:14) + labs(x="Number of engaged sources", y="Proportion of papers") + theme_bw() + opts(title = "") + cbgFillPalette + cbgColourPalette
+ggplot(subset(df_nonzero_indicator_engaged, num_nonzero>=2), aes(x=num_nonzero)) + 
+    geom_histogram(aes(y=..density..), alpha=0.5, binwidth=1, position="identity", breaks=1:14) + 
+    labs(x="Number of engaged sources", y="Proportion of papers") + theme_bw() + 
+    opts(title = "") + cbgFillPalette + cbgColourPalette
 #ggplot(subset(dat.nonzero.indicator.engaged, num_nonzero>0), aes(x=num_nonzero, fill=year)) + geom_density(aes(y=..density..), alpha=0.5, adjust=4) + labs(x="Number of engaged sources", y="Density") + theme_bw() + opts(title = "") + cbgFillPalette
 #ggplot(subset(dat.nonzero.indicator.engaged, num_nonzero>0), aes(x=num_nonzero)) + geom_freqpoly(aes(y=..density.., color=year), alpha=0.5, binwidth=1, position="identity") + labs(x="Number of engaged sources", y="Number of papers") + theme_bw() + opts(title = "") + cbgFillPalette + cbgColourPalette
 dev.off()
@@ -87,24 +106,21 @@ dev.off()
 
 ########## FIGURE 5: EVENT CREATION BY CREATOR
 
-#load(paste(PATH_TO_DERIVED_DATA, "dat_research.RData", sep=""))
-#load(paste(PATH_TO_DERIVED_DATA, "dat_research_norm_transform.RData", sep=""))
-d <-read.csv(paste(PATH_TO_RAW_DATA, "raw_crawler_events.txt.gz", sep=""), sep="\t")
-d$pubDate  = strptime(d$date, "%Y-%m-%dT")
+### HEATHER HERE pull this out in preprocessing.  Also figure 1
 
-art <-read.csv(paste(PATH_TO_RAW_DATA, "raw_crawler_eventcounts.txt.gz", sep=""), sep="\t")
+raw_crawler_events$pubDate = strptime(raw_crawler_events$date, "%Y-%m-%dT")
 
 # restrict events to those on research articles
-art.r <- art[art$articleType=="Research Article", ]
-d <- d[d$doi %in%  art.r$doi,]
+raw_crawler_eventcounts_research <- raw_crawler_eventcounts[raw_crawler_eventcounts$articleType=="Research Article", ]
+raw_crawler_events <- raw_crawler_events[raw_crawler_events$doi %in%  raw_crawler_eventcounts_research$doi,]
 
 # column for which journal
-d$journal <- substr(d$doi, 17, 20)
+raw_crawler_events$journal <- substr(raw_crawler_events$doi, 17, 20)
 
 #######
 
 # get the events
-bt = subset(d, eventType %in% c("citeulike","delicious", "backtweets"))
+bt = subset(raw_crawler_events, eventType %in% c("citeulike","delicious", "backtweets"))
 
 # frame for just Plos ONE, where we have much more data
 bt.pone <- bt[bt$journal == "pone",]
@@ -132,7 +148,7 @@ dev.off()
 
 ############ FIGURE 6:   EVENTS OVER TIME, BY METRIC
 
-df_events = d
+df_events = raw_crawler_events
 
 # remove tweets with negative latency
 nrow(df_events[df_events$latency <= 0,]) / nrow(df_events) 
@@ -164,18 +180,13 @@ dev.off()
 
 ############  FIGURE 7:  events by latency
 
-source("do_normalization_viz.R")
-
-load(file = "../data/derived/dat_backgrounds.RData")
-
-journals = names(dat.backgrounds)
-dat = dat.research
-yrange = get_ranges(dat, altmetricsColumns)
+journals = names(list_df_backgrounds)
+yrange = get_ranges(df_research, altmetricsColumns)
 
 cols = altmetricsColumns
-dat$pubDateVal = strptime(dat$pubDate, "%Y-%m-%d")
-dat$pubDateVal = as.POSIXct(dat$pubDateVal)
-xrange = range(dat$pubDateVal)
+df_research$pubDateVal = strptime(df_research$pubDate, "%Y-%m-%d")
+df_research$pubDateVal = as.POSIXct(df_research$pubDateVal)
+xrange = range(df_research$pubDateVal)
 
 png(paste(PATH_TO_FIGURES & "figure7.png", sep=""), width=800, height=800)
 
@@ -188,10 +199,10 @@ for (col in cols) {
 	
 	for (journal in journals) {
 		i = i+1
-		inJournal = which(dat$journal==journal)
-		journal.background = dat.backgrounds[[journal]]
+		inJournal = which(df_research$journal==journal)
+		journal.background = list_df_backgrounds[[journal]]
 		#quartz()		
-		lines(dat[inJournal, "pubDateVal"], journal.background[,col], col=cbgRaw[i], lwd=3)
+		lines(df_research[inJournal, "pubDateVal"], journal.background[,col], col=cbgRaw[i], lwd=3)
 	}
 }
 #plot(1)
@@ -201,7 +212,7 @@ dev.off()
 
 
 ###### FIGURE 8
-
+# figure created previously, code not avail
 
 ####### FIGURE 9: Correlations using all data, normalized
 
@@ -211,7 +222,7 @@ library(reshape2)
 library(ggdendro)
 
 
-mycor = calc.correlations(dat.research.norm.transform[, altmetricsColumns], "pairwise.complete.obs", "pearson")
+mycor = calc.correlations(df_research_norm_transform[, altmetricsColumns], "pairwise.complete.obs", "pearson")
 colnames(mycor) = prettyAltmetricsColumns[colnames(mycor)]
 rownames(mycor) = prettyAltmetricsColumns[rownames(mycor)]
 
@@ -249,12 +260,12 @@ dev.off()
 
 library(psych)
 
-mycor = calc.correlations(dat.research.norm.transform[, altmetricsColumns], "pairwise.complete.obs", "pearson")
+mycor = calc.correlations(df_research_norm_transform[, altmetricsColumns], "pairwise.complete.obs", "pearson")
 colnames(mycor) = prettyAltmetricsColumns[colnames(mycor)]
 rownames(mycor) = prettyAltmetricsColumns[rownames(mycor)]
 
 fa.results = fa(mycor, 6, fm="minres", rotate="promax", 
-                 residuals=TRUE, n.obs=max(dim(dat.research.norm.transform)))
+                 residuals=TRUE, n.obs=max(dim(df_research_norm_transform)))
 
 colnames(fa.results$loadings) = c("citations", "pageviews and shares", "facebook-hosted discussion", "plos-hosted comments", "social ref saves", "pdf downloads")
 
@@ -322,7 +333,7 @@ source("utils.R")
 dat = c()
 for (myjournal in c("pbio", "ppat", "pone")) {
     cat("\n", myjournal)
-    dat_journal2010 = subset(dat.research, journal==myjournal)
+    dat_journal2010 = subset(df_research, journal==myjournal)
     dat_journal2010 = subset(dat_journal2010, year=="2010")
     mycor = calc.correlations(dat_journal2010[, altmetricsColumns], "pairwise.complete.obs", "spearman")
     dat = cbind(mycor[,"wosCountThru2011"], dat)
@@ -363,7 +374,7 @@ names(prettyClusterNames) = clusterColumns
 
 source("dat_cluster_centers.create.R")
 combo_and_scale = function(dat) {
-    #dat = subset(dat.research.norm.transform, (journal=="pone") & (year==2010))
+    #dat = subset(df_research_norm_transform, (journal=="pone") & (year==2010))
     dat.for.cluster.unscaled = dat
 
     dat.for.cluster.unscaled$shareCombo = with(dat.for.cluster.unscaled, facebookShareCount + deliciousCount + almBlogsCount + backtweetsCount)
@@ -376,7 +387,7 @@ combo_and_scale = function(dat) {
     return(dat.for.cluster)
 }
 
-dat = subset(dat.research.norm.transform, (journal=="pone") & (as.numeric(year) < 2010))
+dat = subset(df_research_norm_transform, (journal=="pone") & (as.numeric(year) < 2010))
 dat.for.cluster = combo_and_scale(dat)
 #scree_plot_for_number_clusters(dat.for.cluster[,clusterColumns])
 #title("PLoS ONE (2007-2009)")
@@ -494,13 +505,13 @@ write.table(subset(specific_center_exemplars, TRUE, c("title", "doi", "cluster")
 
 library(RWeka)
 
-dat = subset(dat.research.norm.transform, (journal=="pone") & (as.numeric(year) >= 2010))
+dat = subset(df_research_norm_transform, (journal=="pone") & (as.numeric(year) >= 2010))
 dat.for.tree.scaled = combo_and_scale(dat)
 dat_for_tree_with_clusters = predict_centers(dat.for.tree.scaled, cluster_fit)
 dat_for_tree_with_clusters$cluster = dat_for_tree_with_clusters$cluster_guess
 table(dat_for_tree_with_clusters$cluster)
 
-dat.for.tree.unnormalized = merge(dat.research, dat_for_tree_with_clusters[,c("doi", "cluster")], by="doi")
+dat.for.tree.unnormalized = merge(df_research, dat_for_tree_with_clusters[,c("doi", "cluster")], by="doi")
 predictionColumns = c("htmlDownloadsCount","mendeleyReadersCount","wosCountThru2011", "f1000Factor","wikipediaCites", "facebookShareCount", "deliciousCount", "almBlogsCount", "backtweetsCount")
 
 fit <- JRip(factor(cluster) ~ ., data=dat.for.tree.unnormalized[,append(predictionColumns, "cluster")], control = Weka_control(R = TRUE, N=50))
