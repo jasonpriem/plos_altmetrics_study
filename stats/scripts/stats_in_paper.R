@@ -17,6 +17,8 @@ source("lookup_tables.R")
 source("utils.R")
 source("preprocessing_eventcounts_norm.R")
 
+savePng = FALSE
+
 ### preprocess the data, if haven't done that yet
 
 #source("create_df_research.R")
@@ -46,10 +48,19 @@ cat("Total papers with altmetrics data:", dim(df_altmetrics_cleaned)[1])
 
 library(signal)
 window = hamming(WINDOW_WIDTH_IN_DAYS)
-png(PATH_TO_FIGURES & "figure1.png")
+if (savePng) {
+    png(PATH_TO_FIGURES & "figure1.png")
+} else {
+    setup.eps.figure(PATH_TO_FIGURES & "figure1")
+}
+
 days = seq(window)- (length(window)/2)
 plot(days, window)
-dev.off()
+if (savePng) {
+    dev.off()
+} else {
+    close.eps.figure(PATH_TO_FIGURES & "figure1")
+}
 
 
 ##### TABLE 2:  Table on papers per year, per journal
@@ -75,11 +86,20 @@ prettyNames = prettyAltmetricsColumns[names(vector_nonzero_freq)]
 df_nonzero_freq = data.frame(prettyNames=prettyNames, col=names(vector_nonzero_freq), freq=vector_nonzero_freq)
 df_nonzero_freq$names <- factor(df_nonzero_freq$prettyNames, levels=df_nonzero_freq$prettyNames, ordered=T)
 
-png(PATH_TO_FIGURES & "figure2.png", width=500, height=500)
+if (savePng) {
+    png(PATH_TO_FIGURES & "figure2.png", width=500, height=500)
+} else {
+    setup.eps.figure(PATH_TO_FIGURES & "figure2", width=6, height=6)
+}
+
 ggplot(df_nonzero_freq) + geom_bar(aes(names, freq)) + 
     scale_y_continuous("", formatter="percent", breaks=c(0, .2, .4, .6, .8, 1)) + 
     labs(x="") + coord_flip() + theme_bw() + opts(title = "") + cbgFillPalette
-dev.off()
+if (savePng) {
+    dev.off()
+} else {
+    close.eps.figure(PATH_TO_FIGURES & "figure2")
+}
 
 print(nonzero.freq)
 
@@ -98,19 +118,28 @@ print(summary(df_nonzero_indicator_engaged$num_nonzero))
 
 print(cumsum(table(df_nonzero_indicator_engaged$num_nonzero)))/length(df_nonzero_indicator_engaged$num_nonzero)
 
-png(PATH_TO_FIGURES & "figure3.png", width=500, height=500)
+if (savePng) {
+    png(PATH_TO_FIGURES & "figure3.png", width=500, height=500)
+} else {
+    setup.eps.figure(PATH_TO_FIGURES & "figure3", width=6, height=6)
+}
 ggplot(subset(df_nonzero_indicator_engaged, num_nonzero>=2), aes(x=num_nonzero)) + 
-    geom_histogram(aes(y=..density..), alpha=0.5, binwidth=1, position="identity", breaks=1:14) + 
+    geom_histogram(aes(y=..density..), binwidth=1, position="identity", breaks=1:14) + 
     labs(x="Number of engaged sources", y="Proportion of papers") + theme_bw() + 
     opts(title = "") + cbgFillPalette + cbgColourPalette
 #ggplot(subset(dat.nonzero.indicator.engaged, num_nonzero>0), aes(x=num_nonzero, fill=year)) + geom_density(aes(y=..density..), alpha=0.5, adjust=4) + labs(x="Number of engaged sources", y="Density") + theme_bw() + opts(title = "") + cbgFillPalette
 #ggplot(subset(dat.nonzero.indicator.engaged, num_nonzero>0), aes(x=num_nonzero)) + geom_freqpoly(aes(y=..density.., color=year), alpha=0.5, binwidth=1, position="identity") + labs(x="Number of engaged sources", y="Number of papers") + theme_bw() + opts(title = "") + cbgFillPalette + cbgColourPalette
-dev.off()
+if (savePng) {
+    dev.off()
+} else {
+    close.eps.figure(PATH_TO_FIGURES & "figure3")
+}
 
+#### Figure 4:
+#created elsewhere
 
 ########## FIGURE 5: EVENT CREATION BY CREATOR
 
-### HEATHER HERE pull this out in preprocessing.  Also figure 1
 
 raw_crawler_events$pubDate = strptime(raw_crawler_events$date, "%Y-%m-%dT")
 
@@ -144,14 +173,22 @@ for (eType in c("citeulike","delicious", "backtweets")) {
 #plot(creators, log="xy")
 }
 
-png(PATH_TO_FIGURES & "figure5.png", width=600, height=300)
+if (savePng) {
+    png(PATH_TO_FIGURES & "figure5.png", width=600, height=300)
+} else {
+    setup.eps.figure(PATH_TO_FIGURES & "figure5", width=6, height=3)
+}
 ggplot(data=df_event_creators, aes(x=num_creations)) + 
     geom_histogram(binwidth=0.35, position="identity") + 
     scale_x_log10(formatter="comma", breaks=c(0, 1, 10, 100, 1000)) + 
     scale_y_log10(formatter="comma", breaks=c(0, 1, 10, 100, 1000)) + 
     labs(x="number of events", y="number of distinct event creators") + 
     theme_bw() + cbgFillPalette + facet_grid(~ eventType)
-dev.off()
+if (savePng) {
+    dev.off()
+} else {
+    close.eps.figure(PATH_TO_FIGURES & "figure5")
+}
 
 ############ FIGURE 6:   EVENTS OVER TIME, BY METRIC
 
@@ -171,15 +208,25 @@ for (eType in c("html views", "pdf views", "native comments", "citeulike", "back
 }
 
 
-png(PATH_TO_FIGURES & "figure6.png", width=600, height=500)
+if (savePng) {
+    png(PATH_TO_FIGURES & "figure6.png", width=600, height=500)
+} else {
+    setup.eps.figure(PATH_TO_FIGURES & "figure6", width=6, height=5)
+}
 ggplot(data=df_events_by_week, aes(x=week, y=num_events, color=eventType)) + 
-    geom_point(aes(alpha=0.5)) + 
+#    geom_point(aes(alpha=0.5)) + 
+    geom_point(size=1) + 
     scale_y_log10(breaks=c(1, 10, 100, 1000, 10000, 100000), labels=c(1, 10, 100, 1000, 10000, 100000)) + 
     scale_x_continuous(breaks=c((1:5)*52)) + 
     labs(x="weeks since publication", y="total events each week") + 
     theme_bw() + cbgColourPalette + cbgFillPalette + 
-    geom_smooth(span=0.3) + scale_alpha(legend = FALSE)
-dev.off()
+    geom_smooth(span=0.3) 
+#    + scale_alpha(legend = FALSE)
+if (savePng) {
+    dev.off()
+} else {
+    close.eps.figure(PATH_TO_FIGURES & "figure6")
+}
 
 
 
@@ -193,27 +240,37 @@ df_research$pubDateVal = strptime(df_research$pubDate, "%Y-%m-%d")
 df_research$pubDateVal = as.POSIXct(df_research$pubDateVal)
 xrange = range(df_research$pubDateVal)
 
-png(paste(PATH_TO_FIGURES & "figure7.png", sep=""), width=800, height=800)
+if (savePng) {
+    png(PATH_TO_FIGURES & "figure7.png", width=800, height=800)
+} else {
+    setup.eps.figure(PATH_TO_FIGURES & "figure7", width=MAX.FIGURE.WIDTH, height=MAX.FIGURE.WIDTH)
+}
 
 #quartz()
 par(mfrow = c(ceiling(length(altmetricsColumns)/4), 4), oma=c(2,2,4,2), mar=c(3, 2, 1.5, 2))
 for (col in cols) {
 	i=0
 	allrange = c(yrange$rangea[which(yrange$column==col)], yrange$rangeb[which(yrange$column==col)])
-	plot(xrange, allrange, type="n", main=prettyAltmetricsColumns[col])
+	plot(xrange, allrange, type="n", main=prettyAltmetricsColumns[col], cex.main=0.75)
 	
 	for (journal in journals) {
 		i = i+1
 		inJournal = which(df_research$journal==journal)
 		journal.background = list_df_backgrounds[[journal]]
+        journal.background$pubDateVal = strptime(journal.background$pubDate, "%Y-%m-%d")
+        journal.background$pubDateVal = as.POSIXct(journal.background$pubDateVal)
 		#quartz()		
-		lines(df_research[inJournal, "pubDateVal"], journal.background[,col], col=cbgRaw[i], lwd=3)
+		lines(journal.background[,"pubDateVal"], journal.background[,col], col=cbgRaw[i], lwd=2)
 	}
 }
 #plot(1)
-legend("center", journals, col = cbgRaw[1:7], lty=1, bty="n", fill=cbgRaw[1:7])
-title(paste("Trends over time per journal"), outer=TRUE)
-dev.off()
+legend("left", journals, col = cbgRaw[1:7], lty=1, bty="n", fill=cbgRaw[1:7], cex=0.65)
+#title(paste("Trends over time per journal"), outer=TRUE)
+if (savePng) {
+    dev.off()
+} else {
+    close.eps.figure(PATH_TO_FIGURES & "figure7")
+}
 
 
 ###### FIGURE 8
@@ -249,16 +306,24 @@ df$col <- with(df, factor(col, levels=col, ordered=TRUE))
 
 mycor_melted <- melt(df, id.vars="col")
 
-png(paste(PATH_TO_FIGURES & "figure9.png", sep=""), width=600, height=600)
+if (savePng) {
+    png(PATH_TO_FIGURES & "figure9.png", width=600, height=600)
+} else {
+    setup.eps.figure(PATH_TO_FIGURES & "figure9", width=6, height=6)
+}
 
-ggplot(mycor_melted, aes(col, variable)) + geom_tile(aes(fill = value), colour = "white") + 
+ggplot(mycor_melted, aes(col, variable)) + geom_tile(aes(fill = value)) + 
      scale_fill_gradient(low = "white", high = "black", space="Lab") + 
-     theme_grey(base_size = 9) + labs(x = "", y = "") + scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0)) + 
-     opts(legend.position = "none", axis.ticks = theme_blank(), axis.text.x = theme_text(size = 12, angle = 270, hjust = 0, colour = "black"), 
-     axis.text.y = theme_text(size = 12, colour = "black", hjust=1))
+     theme_grey(base_size = 9) + labs(x = "", y = "") + 
+     opts(legend.position = "none", axis.ticks = theme_blank(), axis.text.x = theme_text(size = 10, angle = 270, hjust = 0, colour = "black"), 
+     axis.text.y = theme_text(size = 10, colour = "black", hjust=1)) + 
+     scale_x_discrete(expand=c(0,0)) + scale_y_discrete(expand=c(0,0))
 
-
-dev.off()    
+if (savePng) {
+    dev.off()
+} else {
+    close.eps.figure(PATH_TO_FIGURES & "figure9")
+}
 
 
 ############# TABLE 3:  Factor results
@@ -285,14 +350,12 @@ print(xtable(loadings_raw, digits=2), type="html", html.table.attributes = "bord
 write.table(loadings_raw, PATH_TO_TABLES & "table3.csv", sep=",", col.names=FALSE)
 
 
-#########  Supplementary table 1:  Factor results weights
-
-
+#   Factor results weights
 fa.results$weights
 colnames(fa.results$weights) = colnames(fa.results$loadings)
 
-print(xtable(fa.results$weights, digits=2), type="html", html.table.attributes = "border = '0'", file=PATH_TO_TABLES & "supptable1.html")
-write.table(fa.results$weights, PATH_TO_TABLES & "supptable1.csv", sep=",", col.names=FALSE)
+print(xtable(fa.results$weights, digits=2), type="html", html.table.attributes = "border = '0'", file=PATH_TO_TABLES & "supptable2.html")
+write.table(fa.results$weights, PATH_TO_TABLES & "supptable2.csv", sep=",", col.names=TRUE)
 
 
 #########  FIGURE 10:  Factor correlations
@@ -317,15 +380,23 @@ df$col <- with(df, factor(col, levels=col, ordered=TRUE))
 
 fa.cor.melted <- melt(df, id.vars="col")
 
-png(PATH_TO_FIGURES & "figure10.png", width=600, height=600)
+if (savePng) {
+    png(PATH_TO_FIGURES & "figure10.png", width=600, height=600)
+} else {
+    setup.eps.figure(PATH_TO_FIGURES & "figure10", width=6, height=6)
+}
 
 ggplot(fa.cor.melted, aes(col, variable)) + geom_tile(aes(fill = value+1),
      colour = "white") + scale_fill_gradient2(low = "grey50", mid="white", high = "steelblue", trans="log", midpoint=0) + 
      theme_grey(base_size = 12) + labs(x = "", y = "") + scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0)) + 
      opts(legend.position = "none", axis.ticks = theme_blank(), axis.text.x = theme_text(size = 12, angle = 270, hjust = 0, colour = "black"), axis.text.y = theme_text(size = 12, hjust = 1, colour = "black")) + 
-     geom_text(aes(x=col,y=variable, label=sprintf("%.1f", value)), data=fa.cor.melted, size=5, colour="black")
+     geom_text(aes(x=col,y=variable, label=sprintf("%.1f", value)), data=fa.cor.melted, size=3, colour="black")
 
-dev.off()
+if (savePng) {
+    dev.off()
+} else {
+    close.eps.figure(PATH_TO_FIGURES & "figure10")
+}
 
 #fa.diagram(fa.results, simple=T, cex=.5)
     
@@ -364,7 +435,12 @@ create_journal_correlation_table = function(spearman_2010=TRUE, tablename) {
     dat_melted$X2 <- factor(dat_melted$X2, levels(dat_melted$X2)[c(2, 3, 1)], ordered=T)
     dat_melted$X1 <- factor(dat_melted$X1, levels(dat_melted$X1)[sort.list(dat[levels(dat_melted$X1),1], dec=F)], ordered=T)
 
-    png(PATH_TO_TABLES & tablename & ".png", width=600, height=500)
+    if (savePng) {
+        png(PATH_TO_FIGURES & tablename & ".png", width=600, height=500)
+    } else {
+        setup.eps.figure(PATH_TO_FIGURES & tablename, width=6, height=5)
+    }
+    
     p = ggplot(dat_melted, aes(X2, X1)) + 
         geom_tile(aes(fill = value), colour = "white") + 
         scale_fill_gradient(low = "white", high = "steelblue") + 
@@ -374,14 +450,18 @@ create_journal_correlation_table = function(spearman_2010=TRUE, tablename) {
          opts(legend.position = "none", axis.ticks = theme_blank(), axis.text.x = theme_text(size = 12, angle = 340, hjust = 0.5, colour = "black"), axis.text.y = theme_text(size = 12, hjust = 1, colour = "black")) + 
          geom_text(aes(x=X2,y=X1, label=sprintf("%.1f", value)), data=dat_melted, size=4, colour="black")
     print(p)
-    dev.off()
+    if (savePng) {
+        dev.off()
+    } else {
+        close.eps.figure(PATH_TO_FIGURES & tablename)
+    }
 
     print(xtable(dat, digits=2), type="html", html.table.attributes = "border = '0'", file=PATH_TO_TABLES & tablename & ".html")
-    write.table(dat, PATH_TO_TABLES & tablename & ".csv", sep=",", col.names=FALSE)
+    write.table(dat, PATH_TO_FIGURES & tablename & ".csv", sep=",", col.names=FALSE)
 }
 
-create_journal_correlation_table(TRUE, "table4A")
-create_journal_correlation_table(FALSE, "table4B")
+create_journal_correlation_table(FALSE, "figure11")
+create_journal_correlation_table(TRUE, "figure12")
 
 ########## Figure 11:  PLOT CLUSTER CENTERS
 
@@ -391,7 +471,6 @@ clusterColumns = append(clusterColumns, "shareCombo")
 prettyClusterNames = c("HTML pageviews", "Mendeley saves", "Web of Science cites", "F1000 rating", "Sharing combo")
 names(prettyClusterNames) = clusterColumns
 
-source("dat_cluster_centers.create.R")
 combo_and_scale = function(dat) {
     #dat = subset(df_research_norm_transform, (journal=="pone") & (year==2010))
     dat.for.cluster.unscaled = dat
@@ -440,7 +519,12 @@ a = t(round((cluster_fit$centers)[sorted_size,clusterColumns], 1))
 #round(t(prop.table(table(dat_with_cluster_assignments$cluster, dat_with_cluster_assignments$year), 2)), 2)
 #round(t(prop.table(table(dat_with_cluster_assignments$cluster, cut(dat_with_cluster_assignments$authorsCount, c(0, 2, 5, 10, 200))), 2)), 2)
 
-png(PATH_TO_FIGURES & "figure11.png", width=800, height=200)
+
+if (savePng) {
+    png(PATH_TO_FIGURES & "figure13.png", width=800, height=200)
+} else {
+    setup.eps.figure(PATH_TO_FIGURES & "figure13", width=MAX.FIGURE.WIDTH, height=2)
+}
 
 ggplot(melt(a), aes(X2, X1, width=rep(1.5*(cluster_fit$size[sorted_size])/(max(cluster_fit$size)),each=5))) + geom_tile(aes(fill = value+1), colour = "white") + 
     scale_fill_gradient2(low = "grey50", mid="white", high = "steelblue", trans="log", midpoint=0) + 
@@ -448,12 +532,16 @@ ggplot(melt(a), aes(X2, X1, width=rep(1.5*(cluster_fit$size[sorted_size])/(max(c
      scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0)) + 
      opts(legend.position = "none", axis.ticks = theme_blank(), axis.text.x = theme_text(size = 12, angle = 340, hjust = 0.5, colour = "black"), axis.text.y = theme_text(size = 12, hjust = 1, colour = "black")) +
      geom_text(aes(x=X2,y=X1, label=sprintf("%.1f", value)),data=melt(a), size=3, colour="black")
-dev.off()     
+if (savePng) {
+    dev.off()
+} else {
+    close.eps.figure(PATH_TO_FIGURES & "figure13")
+}
 
 ########## supp info TABLES OF CORRELATES WITH CLUSTERS
 
-print(xtable(a, digits=1), type="html", html.table.attributes = "border = '0'", file=PATH_TO_TABLES & "supptable2.html")
-write.table(a, PATH_TO_TABLES & "supptable2.csv", sep=",", col.names=FALSE)
+print(xtable(a, digits=1), type="html", html.table.attributes = "border = '0'", file=PATH_TO_TABLES & "supptableA.html")
+write.table(a, PATH_TO_TABLES & "supptableA.csv", sep=",", col.names=FALSE)
 
 
 ########## CLUSTER EXEMPLARS
@@ -509,8 +597,8 @@ specific_center_exemplars
     
 print(subset(specific_center_exemplars, TRUE, c("title", "doi", "cluster")))
 
-print(xtable(subset(specific_center_exemplars, TRUE, c("title", "doi", "cluster"))), type="html", html.table.attributes = "border = '0'", file=PATH_TO_TABLES & "supptable3.html")
-write.table(subset(specific_center_exemplars, TRUE, c("title", "doi", "cluster")), PATH_TO_TABLES & "supptable3.csv", sep=",", col.names=FALSE)
+print(xtable(subset(specific_center_exemplars, TRUE, c("title", "doi", "cluster"))), type="html", html.table.attributes = "border = '0'", file=PATH_TO_TABLES & "supptableB.html")
+write.table(subset(specific_center_exemplars, TRUE, c("title", "doi", "cluster")), PATH_TO_TABLES & "supptableB.csv", sep=",", col.names=FALSE)
 
 write("<ul>", file=PATH_TO_TABLES & "table5.html", append=F)
 for (i in seq(specific_center_exemplars[,1])) {
@@ -520,8 +608,8 @@ write("</ul>", file=PATH_TO_TABLES & "table5.html", append=T)
 
 ######### supp table 3
 
-print(xtable(subset(specific_center_exemplars, TRUE, c("title", "doi", "cluster"))), type="html", html.table.attributes = "border = '0'", file=PATH_TO_TABLES & "supptable3.html")
-write.table(subset(specific_center_exemplars, TRUE, c("title", "doi", "cluster")), PATH_TO_TABLES & "supptable3.csv", sep=",", col.names=FALSE)
+print(xtable(subset(specific_center_exemplars, TRUE, c("title", "doi", "cluster"))), type="html", html.table.attributes = "border = '0'", file=PATH_TO_TABLES & "supptableC.html")
+write.table(subset(specific_center_exemplars, TRUE, c("title", "doi", "cluster")), PATH_TO_TABLES & "supptableC.csv", sep=",", col.names=FALSE)
 
 
 ########## table 6 CLUSTER RULES
