@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title></title>
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  <style>
+  @media print {.noPrint {display:none;}}
+  a, a:visited {color: #004;}
+  body {font-family: helvetica; font-size: 9pt;}
+  header {border-bottom: 1px solid #000; padding: 3px;}
+  header .title {margin-top: 0px; margin-bottom: 0px; border-bottom: none; font-size: 12pt;}
+  header .author {margin-top: 0px; margin-bottom: 0px; font-size: 8pt; color: #666}
+  header .date {margin-top: 0px; margin-bottom: 0px; font-size: 8pt; color: #666} 
+  h1 {border-bottom: 1px solid #ccc; font-size: 14pt; color: #000;}
+  h1 a {color: #000; text-decoration: none;}
+  h2, h2 a {font-size: 12pt; color: #000; text-decoration: none;}
+  h3, h3 a {font-size: 10pt; color: #000; text-decoration: none;}
+  header h2 a {font-size: 10pt;}
+  header h3 a {font-size: 10pt;}
+  table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+    margin: 0; padding: 0; vertical-align: baseline; border: none; }
+  table.sourceCode { width: 100%; }
+  td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+  td.sourceCode { padding-left: 5px; }
+  code > span.kw { color: #007020; font-weight: bold; }
+  code > span.dt { color: #902000; }
+  code > span.dv { color: #40a070; }
+  code > span.bn { color: #40a070; }
+  code > span.fl { color: #40a070; }
+  code > span.ch { color: #4070a0; }
+  code > span.st { color: #4070a0; }
+  code > span.co { color: #60a0b0; font-style: italic; }
+  code > span.ot { color: #007020; }
+  code > span.al { color: #ff0000; font-weight: bold; }
+  code > span.fu { color: #06287e; }
+  code > span.er { color: #ff0000; font-weight: bold; }
+  td.lineNumbers { width: 50px; }
+  table.sourceCode {border: 1px solid #ccc;}
+  .header-section-number {color: #aac;}
+  </style>
+  </head>
+</head>
+<body>
+<!-- pandoc -r markdown -w html -H header.html altmetrics.md  > altmetrics12.html -->
+
+<h1 id="altmetrics-in-the-wild-using-social-media-to-explore-scholarly-impact">Altmetrics in the Wild: Using Social Media to Explore Scholarly Impact</h1>
+<p>Jason Priem(1), Heather A. Piwowar(2), Bradley M. Hemminger(1)</p>
+<p><em>The first two authors contributed equally to this paper.</em></p>
+<ol style="list-style-type: decimal">
+<li>School of Information and Library Science , University of North Carolina at Chapel Hill</li>
+<li>National Evolutionary Synthesis Center (NESCent)</li>
+</ol>
+<h2 id="introduction">Introduction</h2>
+<p>In growing numbers, scholars are integrating social media tools like blogs, Twitter, and Mendeley into their professional communications. The online, public nature of these tools exposes and reifies scholarly processes once hidden and ephemeral. Consequently, tracking mentions of scholarly articles across this expanding online landscape could inform new, broader, faster measures of impact, complementing traditional citation metrics.</p>
+<p>Before this can be done, however, it is important to explore, describe, and characterize the properties of these social media-based metrics or &quot;altmetrics.&quot;</p>
+<h2 id="method">Method</h2>
+<p>We gathered altmetrics and citations on a set of 24,331 articles published by the Public Library of Science (PLoS) between 2003-08-18 and 2010-12-23. Editorials, perspectives, etc. were excluded from the analysis dataset, resulting in 21,096 research articles.</p>
+<p>Using the PLoS Article Level Metrics (PLoS ALM) interface and those of independent tools, we gathered metrics for each of these articles. Sources included:</p>
+<ul>
+<li>Delicious</li>
+<li>Wikipedia</li>
+<li>Mendeley</li>
+<li>Facebook</li>
+<li>Twitter</li>
+<li>CiteULike</li>
+<li>Nature Blogs</li>
+<li>Postgenomic blogs</li>
+<li>Research Blogging blogs</li>
+<li>Scopus citations</li>
+<li>CrossRef citations</li>
+<li>PubMed Central citations</li>
+<li>Monthly pdf, html, and xml views/downloads</li>
+<li>PLoS comments count</li>
+<li>Web of Science citations</li>
+<li>Faculty of 1000 rankings</li>
+</ul>
+<p>Approximately 1.8 million altmetric events were gathered in total.</p>
+<p>In addition, in November 2010 and December 2011, we gathered Thomson Reuters Web of Science citation counts manually through the Web of Science website interface.</p>
+<p>We normalized these counts by publication date and journal venue. Normalization was done by dividing each metric value by a weighted average of its neighbors: metrics for articles published in the same journal in the same timeframe.</p>
+<h2 id="findings">Findings</h2>
+<h3 id="no-shortage-of-altmetrics-data">No shortage of altmetrics data</h3>
+<p>There is no shortage of data from altmetrics sources, although different indicators vary greatly in activity. Around 80% of sampled articles were included in at least one Mendeley library, and a quarter of articles have nonzero data from five or more different sources.</p>
+<img src="https://github.com/jasonpriem/plos_altmetrics_study/raw/master/stats/results/figures/figure2.png" class="plot" />
+<h3 id="citations-and-altmetric-indictors-are-correlated-but-independent">Citations and altmetric indictors are correlated but independent</h3>
+<p>Altmetrics and citations track forms of impact that are distinct, but related; neither approach is able to describe the complete picture of scholarly use alone. There are moderate correlations between Mendeley and Web of Science citation (comparable to that between Web of Science and Scopus), but many altmetric indicators seem mostly orthogonal to citation.</p>
+<img src="https://github.com/jasonpriem/plos_altmetrics_study/raw/master/stats/results/figures/figure12.png" class="plot" />
+<h3 id="altmetrics-reveal-different-flavors-of-impact">Altmetrics reveal different &quot;flavors&quot; of impact</h3>
+<p>Articles cluster in ways that suggest five different impact “flavors,” capturing impacts of different types on different audiences; for instance, some articles may be heavily read and saved by scholars but seldom cited. Together, these findings encourage more research into altmetrics as complements to traditional citation measures.</p>
+<img src="https://github.com/jasonpriem/plos_altmetrics_study/raw/master/handmade/figure13-edited.png" class="plot" width=600/>
+<h2 id="conclusions">Conclusions</h2>
+<p>These results are subject to several important limitations. First, data quality is a challenge, since different services come and go over time. Second, our sample should be carefully considered before attempting to generalize results: PLoS publishes only open-access journals, and the corpus of articles is dominated, particularly in later years, by the huge volume published by PLoS ONE. This unique publication has a volume and scope dwarfing that of traditional journals, inescapably giving rise to similarly unique patterns of readership.</p>
+<p>In 2005, Cronin argued: “It is clear that we will soon have access to a critical mass of web-based digital objects and usage statistics with which to develop multi-dimensional models of scholars’ communication behaviors” [Cronin 2005]. Seven years later, our data suggest that he was correct.</p>
+<h2 id="references">References</h2>
+<p>Cronin B (2005) A hundred million acts of whimsy. Current Science 89: 1505 – 1509.</p>
+<h2 id="data-and-code-availability">Data and code availability</h2>
+<p>Data and code availability Datasets and statistics scripts are available <a href="https://github.com/jasonpriem/plos_altmetrics_study">on GitHub</a> and under a <a href="http://creativecommons.org/publicdomain/zero/1.0/">CCZero</a> waiver.</p>
+<h2 id="funding">Funding</h2>
+<p>JP was funded through a UNC Royster Fellowship. HP was funded by the US National Science Foundation through awards to DataONE (OCI-0830944), Dryad (NSF DBI-0743720) and NESCent (EF-0905606). JP and HP are co-founders of an altmetrics application, <a href="http://total-impact.org">Total-Impact</a>.</p>
+</body>
+</html>
