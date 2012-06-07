@@ -70,10 +70,9 @@ In 2005, Cronin argued: “It is clear that we will soon have access to a critic
 
 Cronin B (2005) A hundred million acts of whimsy. Current Science 89: 1505 – 1509.
 
-## Data and code availability
+## Data, code, and full article availability
 
-Data and code availability
-Datasets and statistics scripts are available [on GitHub](https://github.com/jasonpriem/plos_altmetrics_study) and under a [CCZero](http://creativecommons.org/publicdomain/zero/1.0/) waiver.
+This extended abstract summarizes a full article, which is available on [ArXiv](http://arxiv.org/abs/1203.4745). Datasets and statistics scripts are available [on GitHub](https://github.com/jasonpriem/plos_altmetrics_study) and under a [CCZero](http://creativecommons.org/publicdomain/zero/1.0/) waiver.
 
 ##Funding
 JP was funded through a UNC Royster Fellowship. HP was funded by the US National Science Foundation through awards to DataONE (OCI-0830944), Dryad (NSF DBI-0743720) and NESCent (EF-0905606).  JP and HP are co-founders of an altmetrics application, [Total-Impact](http://total-impact.org).
